@@ -8,9 +8,9 @@ Texture2D grassTexture;
 
 
 void blockTexturesInit() {
-	const char* table = "C:/projects/C version/C version/game/src/sprites/crafting_table.png";
-	const char* rose = "C:/projects/C version/C version/game/src/sprites/rose.png";
-	const char* grass = "C:/projects/C version/C version/game/src/sprites/grass.png";
+	const char* table = "../src/game/sprites/crafting_table.png";
+	const char* rose =  "../src/game/sprites/rose.png";
+	const char* grass = "../src/game/sprites/grass.png";
 	loadTextureFromFile(&craftingTexture, table, 4);
 	loadTextureFromFile(&roseTexture, rose, 4);
 	loadTextureFromFile(&grassTexture, grass, 4);

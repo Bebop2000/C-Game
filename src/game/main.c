@@ -2,9 +2,7 @@
 #include "input.h"
 #include "window.h"
 #include "scenes/testScene.h"
-#include <stdio.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+
 
 void framebufferSizeCallbackM(GLFWwindow* window, int width, int height);
 int main()

@@ -7,8 +7,8 @@ out vec2 texCoords;
 
 uniform mat4 model;
 uniform mat4 view;
-uniform mat4 projectionTimesView;
 uniform mat4 projection;
+uniform mat4 projectionTimesView;
 
 void main()
 {

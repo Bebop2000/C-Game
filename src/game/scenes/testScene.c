@@ -64,7 +64,8 @@ static int init(GLFWwindow* window)
 	framebufferSizeCallback(window, 960, 540);
 	setClearColour(48, 117, 186, 255);	
 
-	shaderProgram = compileShaders("C:/projects/C version/C version/engine/shaders/defaultVertexShader.glsl", "C:/projects/C version/C version/engine/shaders/defaultFragShader.glsl");
+	shaderProgram = compileShaders("../src/engine/shaders/defaultVertexShader.glsl", 
+		"../src/engine/shaders/defaultFragShader.glsl");
 	if (!shaderProgram)
 	{
 		printf("Error compiling shader\n");

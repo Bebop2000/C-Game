@@ -1,13 +1,11 @@
 #pragma once
 
 #define _CRT_SECURE_NO_WARNINGS
-
-#include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
-
 #include "glad/glad.h"
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #include "stb_image.h"
 #include "cglm/mat4.h"
