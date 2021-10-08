@@ -28,39 +28,10 @@ static char* readFile(const char* filepath)
 		return buffer;
 	}
 }
-
-static char* readFileLinux(const char* filepath)
-{
-	char* buffer;
-	long length;
-	FILE* file = fopen(filepath, "r");
-	if (file)
-	{
-		fseek(file, 0, SEEK_END);
-		length = ftell(file);
-		buffer = malloc(length);
-		if (buffer)
-		{
-			fread(buffer, 1, length, file);
-		}
-		else
-		{
-			printf("failed to read to buffer\n");
-			return "";
-		}
-		fclose(file);
-	}
-	else
-	{
-		printf("\"fopen()\" failed\n");
-		return "";
-	}
-
-}
 unsigned int compileShaders(const char* vertexPath, const char* fragPath)
 {
-	char* vertexSource = readFile(vertexPath);
-	char* fragSource = readFile(fragPath);
+	const char* vertexSource = readFile(vertexPath);
+	const char* fragSource = readFile(fragPath);
 	int success;
 	char infoLog[512];
 

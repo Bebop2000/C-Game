@@ -27,20 +27,27 @@ unsigned int shaderProgram;
 
 Block craftingTable;
 Block roseBlock;
+Block grassBlock;
+Block floorBlock;
 
 CameraData camera;
 mat4 viewMatrix;
 mat4 projectionMatrix;
-mat4 shaderMatrix;		// shaderMatrix is the projection matrix multiplied by the view matrix, which is then sent to the vertex shader
+// shaderMatrix is the projection matrix multiplied by the view matrix
+// which is then sent to the vertex shader
+mat4 shaderMatrix;
 float pitch = 0.0f;
 float yaw = -90.0f;
 float fov = 45.0f;
 
 vec3 craftingTableLocation = { 0.0f, -0.0f, 0.0f };
 vec3 roseLocation = { 0.0f, 2.0f, 0.0f };
+vec3 grassLocation = {0.0f, 2.0f, 0.0f};
 
 int windowWidth;
 int windowHeight;
+
+Block grass[1000];
 
 void runTestScene(GLFWwindow* window)
 {
@@ -83,11 +90,45 @@ static int init(GLFWwindow* window)
 	rendererInit();
 	blockTexturesInit();
 
+	float x = 1.0f;
+	float y = 1.0f;
+
+	for(int i = 0; i < 1000; i++)
+	{
+		/*
+		if (x < 10)
+		{
+			x += 1.0f;
+		}
+		else
+		{
+			x = 0.0f;
+			y += 1.0f;
+		}
+		*/
+		x += 1.0f;
+		Block temp = craftingTableBlockInit();
+		vec3 location = {x, 0.0f, y};
+		blockSetLocation(&temp, location);
+		//temp.rotation[0] = random();
+		temp.rotation[1] = random();
+		//temp.rotation[2] = random();
+
+		grass[i] = temp;
+	}
+
 	craftingTable = craftingTableBlockInit();
 	roseBlock = roseBlockInit();
+	//grassBlock = grassBlockInit();
+	floorBlock = floorInit();
 
+	vec3 floorLoc = {0.0, -1.0, 0.0};
+	vec3 floorRot = {M_PI / 4.0f, 0.0f, 0.0f};
+	floorBlock.rotation[0] = M_PI / 2.0f;
 	blockSetLocation(&craftingTable, craftingTableLocation);
 	blockSetLocation(&roseBlock, roseLocation);
+	blockSetLocation(&grassBlock, grassLocation);
+	blockSetLocation(&floorBlock, floorLoc);
 	return 1;
 }
 
@@ -133,9 +174,17 @@ static void loop(GLFWwindow* window)
 		view(camera);
 		glm_mat4_mul(projectionMatrix, viewMatrix, shaderMatrix);
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
+		double num = glfwGetTime();
+		for(int i = 0; i < 1000; i++)
+		{
+			grass[i].rotation[1] += 1.0f;
+			renderBlock(grass[i], shaderProgram);
+		}
 
 		renderBlock(craftingTable, shaderProgram);
 		renderFlower(roseBlock, shaderProgram);
+		renderQuad(grassBlock, shaderProgram);
+		renderQuad(floorBlock, shaderProgram);
 
 		glfwSwapBuffers(window);
 		endFrameScroll();
@@ -152,7 +201,7 @@ static void cleanup()
 static void perspective()
 {
 	glm_mat4_identity(projectionMatrix);
-	glm_perspective(rad(fov), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f, projectionMatrix);
+	glm_perspective(rad(fov), (float)windowWidth / (float)windowHeight, 0.1f, 300.0f, projectionMatrix);
 }
 
 static void view(struct CameraData camera)

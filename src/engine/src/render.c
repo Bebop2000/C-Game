@@ -10,7 +10,7 @@ Mesh quadMesh;
 
 void renderBlock(Block block, unsigned int shaderProgram)
 {
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.id));
+	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.textureID));
 	glBindVertexArray(cubeMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeMesh.EBO);
@@ -21,18 +21,20 @@ void renderBlock(Block block, unsigned int shaderProgram)
 	vec3 yAxis = { 0.0f, 1.0f, 0.0f };
 	vec3 zAxis = { 0.0f, 0.0f, 1.0f };
 	glm_mat4_identity(transform);
-	glm_scale(transform, block.scale);
+	glm_translate(transform, block.location);
+	vec3 uScale = {block.scaleS, block.scaleS, block.scaleS};
+	glm_scale(transform, block.scaleV);
+	glm_scale(transform, uScale);
 	glm_rotate(transform, block.rotation[0], xAxis);
 	glm_rotate(transform, block.rotation[1], yAxis);
 	glm_rotate(transform, block.rotation[2], zAxis);
-	glm_translate(transform, block.location);
 	setShaderMat4("model", transform, shaderProgram);
 	glDrawElements(GL_TRIANGLES, cubeMesh.vertices, GL_UNSIGNED_INT, 0);
 }
 
 void renderQuad(Block block, unsigned int shaderProgram)
 {
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.id));
+	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.textureID));
 	glBindVertexArray(quadMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
@@ -44,23 +46,27 @@ void renderQuad(Block block, unsigned int shaderProgram)
 	vec3 yAxis = { 0.0f, 1.0f, 0.0f };
 	vec3 zAxis = { 0.0f, 0.0f, 1.0f };
 	glm_mat4_identity(transform);
-	glm_scale(transform, block.scale);
+	glm_translate(transform, block.location);
+	vec3 uScale = {block.scaleS, block.scaleS, block.scaleS};
+	glm_scale(transform, block.scaleV);
+	glm_scale(transform, uScale);
 	glm_rotate(transform, block.rotation[0], xAxis);
 	glm_rotate(transform, block.rotation[1], yAxis);
 	glm_rotate(transform, block.rotation[2], zAxis);
-	glm_translate(transform, block.location);
 	setShaderMat4("model", transform, shaderProgram);
 	glDrawElements(GL_TRIANGLES, quadMesh.vertices, GL_UNSIGNED_INT, 0);
-
 }
 
 void renderFlower(Block block, unsigned int shaderProgram)
 {
 	//create copy of block into block2 and rotate that block by 90 degrees on the y axis
 	//then render both quads
+	vec3 Test = {block.scaleS, block.scaleS, block.scaleS};
+	// rotate first block 45 degrees
 	block.rotation[1] += 45.0f * (float)M_PI / 180.0f;
 	Block block2;
 	memcpy(&block2, &block, sizeof(Block));
+	// rotate second block 90 degrees
 	block2.rotation[1] = block.rotation[1] + (float)M_PI / 2.0f;
 	renderQuad(block, shaderProgram);
 	renderQuad(block2, shaderProgram);
