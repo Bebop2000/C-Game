@@ -18,7 +18,7 @@
 					]
 				}
 			],
-			"name" : "Debug",
+			"name" : "",
 			"projects" : 
 			[
 				{
@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "CGame::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-CGame-Debug-11b0ae94fde9725d8ecb.json",
+					"jsonFile" : "target-CGame-f0a641814aafe32dbe19.json",
 					"name" : "CGame",
 					"projectIndex" : 0
 				}
