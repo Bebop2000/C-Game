@@ -95,7 +95,7 @@ static int init(GLFWwindow* window)
 
 	for(int i = 0; i < 1000; i++)
 	{
-		/*
+		
 		if (x < 10)
 		{
 			x += 1.0f;
@@ -105,9 +105,9 @@ static int init(GLFWwindow* window)
 			x = 0.0f;
 			y += 1.0f;
 		}
-		*/
+		
 		x += 1.0f;
-		Block temp = craftingTableBlockInit();
+		Block temp = grassBlockInit();
 		vec3 location = {x, 0.0f, y};
 		blockSetLocation(&temp, location);
 		//temp.rotation[0] = random();
