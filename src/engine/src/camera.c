@@ -31,20 +31,42 @@ static float rad(float val)
 
 void updateCameraFront(CameraData* camera)
 {
-	(*camera).cameraFront[0] = (float)(cos((rad((*camera).yaw))) * cos(rad((*camera).pitch)));
-	(*camera).cameraFront[1] = (float)sin(rad((*camera).pitch));
-	(*camera).cameraFront[2] = (float)(sin(rad((*camera).yaw)) * cos(rad((*camera).pitch)));
+	camera->cameraFront[0] = (float)(cos((rad(camera->yaw))) * cos(rad(camera->pitch)));
+	camera->cameraFront[1] = (float)sin(rad(camera->pitch));
+	camera->cameraFront[2] = (float)(sin(rad(camera->yaw)) * cos(rad(camera->pitch)));
 }
 
 void moveCameraForwards(CameraData* camera, float mult)
 {
 	vec3 cameraFrontMult;
-	glm_vec3_scale((*camera).cameraFront, mult, cameraFrontMult);
-	glm_vec3_add((*camera).cameraFront, (*camera).cameraPos, &((*camera).cameraPos));
-
+	glm_vec3_scale(camera->cameraFront, mult, cameraFrontMult);
+	glm_vec3_add(cameraFrontMult, camera->cameraPos, &(camera->cameraPos));
 }
 
-void strafeCameraRight(CameraData* camera)
+void moveCameraBackwards(CameraData* camera, float mult)
 {
+	vec3 cameraFrontMult;
+	glm_vec3_scale(camera->cameraFront, mult, cameraFrontMult);
+	glm_vec3_sub(camera->cameraPos,cameraFrontMult, &(camera->cameraPos));
+}
 
+void strafeCameraRight(CameraData* camera, float mult)
+{
+	vec3 up = {0.0f, 1.0f, 0.0f};
+	vec3 normCross;
+	vec3 multiplied;
+	glm_vec3_crossn(camera->cameraFront, up, normCross);
+	glm_vec3_scale(normCross, mult, multiplied);
+	glm_vec3_add(camera->cameraPos, multiplied, &(camera->cameraPos));
+}
+
+void strafeCameraLeft(CameraData* camera, float mult)
+{
+	vec3 up = {0.0f, 1.0f, 0.0f};
+	vec3 normCross;
+	vec3 multiplied;
+	glm_vec3_crossn(camera->cameraFront, up, normCross);
+	glm_vec3_scale(normCross, mult, multiplied);
+	glm_vec3_sub(camera->cameraPos, multiplied, &(camera->cameraPos));
+	
 }

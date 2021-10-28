@@ -4,9 +4,6 @@
 #include "cglm/mat4.h"
 #include "cglm/vec3.h"
 
-
-
-
 unsigned int compileShaders(const char* vertexPath, const char* fragPath);
 void setShaderInt(const char* name, int value, GLuint shaderProgram);
 void setShaderMat4(const char* name, mat4 mat, GLuint shaderProgram);
