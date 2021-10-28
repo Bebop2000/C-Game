@@ -2,6 +2,8 @@
     "files.associations": {
         "glfw3.h": "c",
         "stb_image.h": "c",
-        "testscene.h": "c"
+        "testscene.h": "c",
+        "blocktextures.h": "c",
+        "block.h": "c"
     }
 }

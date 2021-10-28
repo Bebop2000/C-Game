@@ -23,6 +23,7 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
+		glfwPollEvents();
 		glClear(GL_COLOR_BUFFER_BIT);
 		if (isKeyPressed(GLFW_KEY_ESCAPE))
 		{
@@ -32,7 +33,6 @@ int main()
 		{
 			runTestScene(window);
 		}
-		glfwPollEvents();
 	}
 
 	glfwTerminate();

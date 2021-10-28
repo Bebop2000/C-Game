@@ -7,7 +7,9 @@ typedef enum BlockID
 	CRAFTING_TABLE_BLOCK,
 	ROSE_BLOCK,
 	GRASS_BLOCK,
-	FLOOR
+	FLOOR,
+	GREEN,
+	AIR
 }BlockID;
 
 typedef struct DefaultBlock {
@@ -23,4 +25,5 @@ Block craftingTableBlockInit();
 Block roseBlockInit();
 Block grassBlockInit();
 Block floorInit();
+Block greenInit();
 //void renderFlower(DefaultBlock);

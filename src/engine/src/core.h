@@ -10,6 +10,7 @@
 #include "stb_image.h"
 #include "cglm/mat4.h"
 #include "cglm/vec3.h"
+#include "cglm/vec2.h"
 #include "cglm/affine.h"
 #include "cglm/cam.h"
 

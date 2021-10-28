@@ -33,3 +33,10 @@ Block floorInit()
 	temp.textureID = FLOOR;
 	return temp;
 }
+
+Block greenInit()
+{
+	Block temp = defaultBlockInit();
+	temp.textureID = GREEN;
+	return temp;
+}

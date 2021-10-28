@@ -8,9 +8,11 @@ typedef struct
 	int vertices;
 }Mesh;
 
-void renderBlock(Block block, unsigned int shaderProgram);
-void renderQuad(Block block, unsigned int shaderProgram);
-void renderFlower(Block block, unsigned int shaderProgram);
+void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram);
+void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram);
+//void renderFlower(Block block, unsigned int shaderProgram);
+void bindQuadMesh();
+void bindCubeMesh();
 void cubeMeshInit();
 void uniformCubeMeshInit();
 void quadMeshInit();

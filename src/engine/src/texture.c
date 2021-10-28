@@ -5,7 +5,7 @@
 // channels refers to the number of channels in the image format
 // jpg (rgb) = 3 channels
 // png (rgba) = 4 channels
-void loadTextureFromFile(Texture2D* texture, const char* file, int channels)
+void loadTextureFromFile(Texture* texture, const char* file, int channels)
 {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
