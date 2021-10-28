@@ -204,6 +204,33 @@ src/engine/src/camera.c.s:
 	$(MAKE) -f CMakeFiles/CGame.dir/build.make CMakeFiles/CGame.dir/src/engine/src/camera.c.s
 .PHONY : src/engine/src/camera.c.s
 
+src/engine/src/chunk.o: src/engine/src/chunk.c.o
+
+.PHONY : src/engine/src/chunk.o
+
+# target to build an object file
+src/engine/src/chunk.c.o:
+	$(MAKE) -f CMakeFiles/CGame.dir/build.make CMakeFiles/CGame.dir/src/engine/src/chunk.c.o
+.PHONY : src/engine/src/chunk.c.o
+
+src/engine/src/chunk.i: src/engine/src/chunk.c.i
+
+.PHONY : src/engine/src/chunk.i
+
+# target to preprocess a source file
+src/engine/src/chunk.c.i:
+	$(MAKE) -f CMakeFiles/CGame.dir/build.make CMakeFiles/CGame.dir/src/engine/src/chunk.c.i
+.PHONY : src/engine/src/chunk.c.i
+
+src/engine/src/chunk.s: src/engine/src/chunk.c.s
+
+.PHONY : src/engine/src/chunk.s
+
+# target to generate assembly for a file
+src/engine/src/chunk.c.s:
+	$(MAKE) -f CMakeFiles/CGame.dir/build.make CMakeFiles/CGame.dir/src/engine/src/chunk.c.s
+.PHONY : src/engine/src/chunk.c.s
+
 src/engine/src/input.o: src/engine/src/input.c.o
 
 .PHONY : src/engine/src/input.o
@@ -465,6 +492,9 @@ help:
 	@echo "... src/engine/src/camera.o"
 	@echo "... src/engine/src/camera.i"
 	@echo "... src/engine/src/camera.s"
+	@echo "... src/engine/src/chunk.o"
+	@echo "... src/engine/src/chunk.i"
+	@echo "... src/engine/src/chunk.s"
 	@echo "... src/engine/src/input.o"
 	@echo "... src/engine/src/input.i"
 	@echo "... src/engine/src/input.s"

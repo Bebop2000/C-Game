@@ -4,6 +4,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/CGame.dir/src/engine/src/blocks/block.c.o"
   "CMakeFiles/CGame.dir/src/engine/src/blocks/blockTextures.c.o"
   "CMakeFiles/CGame.dir/src/engine/src/camera.c.o"
+  "CMakeFiles/CGame.dir/src/engine/src/chunk.c.o"
   "CMakeFiles/CGame.dir/src/engine/src/input.c.o"
   "CMakeFiles/CGame.dir/src/engine/src/render.c.o"
   "CMakeFiles/CGame.dir/src/engine/src/shaderProgram.c.o"
