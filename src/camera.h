@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CAMERA_H
+#define CAMERA_H
 #include "core.h"
 
 typedef struct CameraData {
@@ -17,3 +18,5 @@ void moveCameraForwards(CameraData* camera, float mult);
 void moveCameraBackwards(CameraData* camera, float mult);
 void strafeCameraRight(CameraData* camera, float mult);
 void strafeCameraLeft(CameraData* camera, float mult);
+
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TEXTURE_H
+#define TEXTURE_H
 typedef struct
 {
 	unsigned int ID;
@@ -16,3 +17,5 @@ typedef struct
 } Texture;
 
 void loadTextureFromFile(Texture* texture, const char* file, int ch);
+
+#endif

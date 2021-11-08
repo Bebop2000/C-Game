@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUT_H
+#define INPUT_H
 
 extern bool keysPressed[360];
 extern bool mouseButtonsPressed[10];
@@ -17,3 +18,4 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 bool isKeyPressed(int key);
 
+#endif

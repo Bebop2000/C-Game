@@ -10,7 +10,7 @@ static char* readFile(const char* filepath)
 	FILE* file = fopen(filepath, "r");
 	if (file == NULL)
 	{
-		printf("Error: Couldn't open shader file\n");
+		printf("Error: Couldn't open shader file %s\n", filepath);
 		return NULL;
 	}
 	else

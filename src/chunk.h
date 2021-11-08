@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUNK_H
+#define CHUNK_H
 #include "core.h"
 #include "blocks/block.h"
 
@@ -10,3 +11,5 @@ struct chunk
 typedef struct chunk Chunk;
 
 Chunk generateChunk();
+
+#endif

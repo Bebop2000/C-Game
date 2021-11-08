@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENDER_H
+#define RENDER_H
 #include "core.h"
 #include "blocks/block.h"
 
@@ -17,3 +18,5 @@ void cubeMeshInit();
 void uniformCubeMeshInit();
 void quadMeshInit();
 void rendererInit();
+
+#endif

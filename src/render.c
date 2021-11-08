@@ -87,8 +87,8 @@ void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderPr
 	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
 	//not sure if this is necessary or not
-	//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 	mat4 transform;
 	vec3 xAxis = { 1.0f, 0.0f, 0.0f };
 	vec3 yAxis = { 0.0f, 1.0f, 0.0f };

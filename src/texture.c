@@ -16,7 +16,7 @@ void loadTextureFromFile(Texture* texture, const char* file, int channels)
 	unsigned char* data = stbi_load(file, &width, &height, &nrChannels, STBI_rgb_alpha);
 	if (!data)
 	{
-		printf("Error loading texture\n");
+		printf("Error loading texture %s\n", file);
 	}
 	else
 	{

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BLOCK_H
+#define BLOCK_H
 #include "core.h"
 
 typedef enum BlockID
@@ -27,3 +28,4 @@ Block grassBlockInit();
 Block floorInit();
 Block greenInit();
 //void renderFlower(DefaultBlock);
+#endif

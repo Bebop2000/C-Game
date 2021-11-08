@@ -10,12 +10,12 @@ Texture floorTexture;
 Texture greenTexture;
 
 void blockTexturesInit() {
-	const char* defTexture = "../src/game/sprites/default.png";
-	const char* table = "../src/game/sprites/crafting_table.png";
-	const char* rose =  "../src/game/sprites/rose.png";
-	const char* grass = "../src/game/sprites/grass.png";
-	const char* floor = "../src/game/sprites/floor.png";
-	const char* green = "../src/game/sprites/green.png";
+	const char* defTexture = "../res/textures/default.png";
+	const char* table = "../res/textures/crafting_table.png";
+	const char* rose =  "../res/textures/rose.png";
+	const char* grass = "../res/textures/grass.png";
+	const char* floor = "../res/textures/floor.png";
+	const char* green = "../res/textures/green.png";
 	loadTextureFromFile(&craftingTexture, table, 4);
 	loadTextureFromFile(&roseTexture, rose, 4);
 	loadTextureFromFile(&grassTexture, grass, 4);

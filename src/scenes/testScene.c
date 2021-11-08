@@ -1,14 +1,14 @@
-#include "core.h"
+#include "../core.h"
 #include "testScene.h"
-#include "input.h"
-#include "window.h"
-#include "shaderProgram.h"
-#include "texture.h"
-#include "blocks/block.h"
-#include "blocks/blockTextures.h"
-#include "render.h"
-#include "camera.h"
-#include "chunk.h"
+#include "../input.h"
+#include "../window.h"
+#include "../shaderProgram.h"
+#include "../texture.h"
+#include "../blocks/block.h"
+#include "../blocks/blockTextures.h"
+#include "../render.h"
+#include "../camera.h"
+#include "../chunk.h"
 #include <math.h>
 #include <string.h>
 
@@ -54,7 +54,6 @@ int windowHeight;
 
 Chunk testChunk;
 
-float translations[100][2];
 
 void runTestScene(GLFWwindow *window)
 {
@@ -69,9 +68,12 @@ void runTestScene(GLFWwindow *window)
 	cleanup();
 }
 
+mat4 matrices[100];
+
 static int init(GLFWwindow *window)
 {
 	testChunk = generateChunk();
+	
 	printf("Initializing testScene\n");
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSetCursorPosCallback(window, mouseCallback);
@@ -79,8 +81,8 @@ static int init(GLFWwindow *window)
 	framebufferSizeCallback(window, 960, 540);
 	setClearColour(48, 117, 186, 255);
 
-	shaderProgram = compileShaders("../src/engine/shaders/defaultVertexShader.glsl",
-								   "../src/engine/shaders/defaultFragShader.glsl");
+	shaderProgram = compileShaders("../res/shaders/defaultVertexShader.glsl",
+								   "../res/shaders/defaultFragShader.glsl");
 	if (!shaderProgram)
 	{
 		printf("Error compiling shader\n");
@@ -112,20 +114,6 @@ static int init(GLFWwindow *window)
 	blockSetLocation(&roseBlock, roseLocation);
 	blockSetLocation(&grassBlock, grassLocation);
 	blockSetLocation(&floorBlock, floorLoc);
-
-	int index = 0;
-	float offset = 2.0f;
-	for(int x=0; x<100; x++)
-	{
-		for(int y=0; y<100; y++)
-		{
-			float tx = (float)x * 2;
-			float ty = (float)y * 2;
-			translations[index][0] = tx;
-			translations[index][1] = ty;
-			index++;
-		}
-	}
 
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
@@ -229,10 +217,6 @@ static void processInput()
 	}
 }
 
-static void intToChar(int number)
-{
-	//printf("TEST: %c\n", (char)number);
-}
 static void loop(GLFWwindow *window)
 {
 	sceneShouldClose = false;
@@ -255,48 +239,15 @@ static void loop(GLFWwindow *window)
 		setShaderMat4("projection", projectionMatrix, shaderProgram);
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
 		setShaderInt("instanced", 0, shaderProgram);
-		for(int x=0; x<16; x++)
-		{
-			for(int z=0; z<16; z++)
-			{
-				for(int y=0; y<128; y++)
-				{
-					vec3 loc = {x*2, y*2, z*2};
-					if (testChunk.grid[x][z][y] != AIR)
-						z=z;
-						//renderBlock(testChunk.grid[x][z][y], loc, 1.0f, shaderProgram);
-				}
-			}
-		}
 
-
-
-		for(int i=0; i<100; i++)
-		{
-			setShaderInt("instanced", 1, shaderProgram);
-			vec2 vec;
-			vec[0] = translations[i][0];
-			vec[1] = translations[i][1];
-			char str[100] = "";
-			char intString[10];
-			sprintf(intString, "%i", i);
-			//printf("%s\n", intString);
-			strcat(str, "offsets[");
-			strcat(str, intString);
-			strcat(str, "]");
-			//printf("%s\n", str);
-			setShaderVec2(str, vec, shaderProgram);
-		}
-
-
-		bindCubeMesh();
-		glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, 100);
+		//bindCubeMesh();
+		//glDrawElementsInstanced(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0, 100);
 
 		//setShaderInt("instanced", 0, shaderProgram);
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
 		//renderFlower(roseBlock, shaderProgram);
 		//renderQuad(grassBlock, shaderProgram);
-		//renderQuad(FLOOR, floorLoc, 10.0f, shaderProgram);
+		renderQuad(FLOOR, floorLoc, 100.0f, shaderProgram);
 
 		glfwSwapBuffers(window);
 		endFrameScroll();
@@ -389,6 +340,5 @@ static void printVec3f(vec3 vector)
 
 static float rad(float val)
 {
-
 	return (val * (float)(M_PI / 180));
 }
