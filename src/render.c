@@ -7,81 +7,30 @@
 Mesh cubeMesh;
 Mesh uniformCubeMesh;
 Mesh quadMesh;
-/*
-void renderBlock(Block block, unsigned int shaderProgram)
-{
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.textureID));
-	glBindVertexArray(cubeMesh.VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeMesh.VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeMesh.EBO);
-	//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
-	mat4 transform;
-	vec3 xAxis = { 1.0f, 0.0f, 0.0f };
-	vec3 yAxis = { 0.0f, 1.0f, 0.0f };
-	vec3 zAxis = { 0.0f, 0.0f, 1.0f };
-	glm_mat4_identity(transform);
-	glm_translate(transform, block.location);
-	vec3 uScale = {block.scaleS, block.scaleS, block.scaleS};
-	glm_scale(transform, block.scaleV);
-	glm_scale(transform, uScale);
-	glm_rotate(transform, block.rotation[0], xAxis);
-	glm_rotate(transform, block.rotation[1], yAxis);
-	glm_rotate(transform, block.rotation[2], zAxis);
-	setShaderMat4("model", transform, shaderProgram);
-	glDrawElements(GL_TRIANGLES, cubeMesh.vertices, GL_UNSIGNED_INT, 0);
-}
-*/
 
-void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram)
-{
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
+mat4 transform;
+vec3 xAxis = { 1.0f, 0.0f, 0.0f };
+vec3 yAxis = { 0.0f, 1.0f, 0.0f };
+vec3 zAxis = { 0.0f, 0.0f, 1.0f };
+
+void prepareCubeRender(){
 	glBindVertexArray(cubeMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeMesh.EBO);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	mat4 transform;
-	vec3 xAxis = { 1.0f, 0.0f, 0.0f };
-	vec3 yAxis = { 0.0f, 1.0f, 0.0f };
-	vec3 zAxis = { 0.0f, 0.0f, 1.0f };
+		//glEnableVertexAttribArray(0);
+	//glEnableVertexAttribArray(1);
+}
+void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
+	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
 	glm_mat4_identity(transform);
 	glm_translate(transform, location);
-	vec3 uScale = {scale, scale, scale};
-	glm_scale(transform, uScale);
+	//vec3 uScale = {scale, scale, scale};
+	//glm_scale(transform, uScale);
 	setShaderMat4("model", transform, shaderProgram);
 	glDrawElements(GL_TRIANGLES, cubeMesh.vertices, GL_UNSIGNED_INT, 0);
 }
 
-/*
-void renderQuad(Block block, unsigned int shaderProgram)
-{
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block.textureID));
-	glBindVertexArray(quadMesh.VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
-	//not sure if this is necessary or not
-	//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
-	mat4 transform;
-	vec3 xAxis = { 1.0f, 0.0f, 0.0f };
-	vec3 yAxis = { 0.0f, 1.0f, 0.0f };
-	vec3 zAxis = { 0.0f, 0.0f, 1.0f };
-	glm_mat4_identity(transform);
-	glm_translate(transform, block.location);
-	vec3 uScale = {block.scaleS, block.scaleS, block.scaleS};
-	glm_scale(transform, block.scaleV);
-	glm_scale(transform, uScale);
-	glm_rotate(transform, block.rotation[0], xAxis);
-	glm_rotate(transform, block.rotation[1], yAxis);
-	glm_rotate(transform, block.rotation[2], zAxis);
-	setShaderMat4("model", transform, shaderProgram);
-	glDrawElements(GL_TRIANGLES, quadMesh.vertices, GL_UNSIGNED_INT, 0);
-}
-*/
-
-void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram)
-{
+void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
 	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
 	glBindVertexArray(quadMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
@@ -89,10 +38,6 @@ void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderPr
 	//not sure if this is necessary or not
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	mat4 transform;
-	vec3 xAxis = { 1.0f, 0.0f, 0.0f };
-	vec3 yAxis = { 0.0f, 1.0f, 0.0f };
-	vec3 zAxis = { 0.0f, 0.0f, 1.0f };
 	glm_mat4_identity(transform);
 	glm_translate(transform, location);
 	vec3 uScale = {scale, scale, scale};
@@ -118,22 +63,19 @@ void renderFlower(Block blockID, vec3 location, float scale, unsigned int shader
 }
 */
 
-void bindQuadMesh()
-{
+void bindQuadMesh() {
 	glBindVertexArray(quadMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
 }
 
-void bindCubeMesh()
-{
+void bindCubeMesh() {
 	glBindVertexArray(cubeMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeMesh.EBO);	
 }
 
-void cubeMeshInit()
-{
+void cubeMeshInit() {
 	const float cubeVertices[] = {
 
 		// z plane positive going away from camera
@@ -210,8 +152,7 @@ void cubeMeshInit()
 	glEnableVertexAttribArray(1);
 }
 
-void uniformCubeMeshInit()
-{
+void uniformCubeMeshInit() {
 	const float cubeVertices[] = {
 		// front face
 		-1.0f, -1.0f, 1.0f, 0.0f, 0.0f,		//bottom left		0
@@ -286,8 +227,7 @@ void uniformCubeMeshInit()
 	glEnableVertexAttribArray(1);
 }
 
-void quadMeshInit()
-{
+void quadMeshInit() {
 	const float quadVertices[] = {
 		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,		//0
 		 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,		//1
@@ -321,8 +261,7 @@ void quadMeshInit()
 	glEnableVertexAttribArray(1);
 }
 
-void rendererInit()
-{
+void rendererInit() {
 	cubeMeshInit();
 	uniformCubeMeshInit();
 	quadMeshInit();

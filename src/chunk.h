@@ -3,8 +3,8 @@
 #include "core.h"
 #include "blocks/block.h"
 
-struct chunk
-{   //           x   z   y
+struct chunk{   
+    //           x   z   y
     BlockID grid[16][16][256];
 };
 

@@ -15,8 +15,7 @@
 #include "../vendor/cglm/affine.h"
 #include "../vendor/cglm/cam.h"
 
-typedef enum
-{
+typedef enum{
 	testScene, menuScene
 } Scene;
 

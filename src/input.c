@@ -13,30 +13,25 @@ double lastY = 0.0;
 double xoffset;
 double yoffset;
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	keysPressed[key] = (action == GLFW_PRESS) || (action == GLFW_REPEAT);
 }
 
-void mousePosCallback(GLFWwindow* window, double xpos, double ypos)
-{
+void mousePosCallback(GLFWwindow* window, double xpos, double ypos) {
 	mousePosX = xpos;
 	mousePosY = ypos;
 
 }
 
-void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	mouseButtonsPressed[button] = (action == GLFW_PRESS) || (action == GLFW_REPEAT);
 }
 
-void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
+void mouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 	scrollXOffset = xoffset;
 	scrollYOffset = yoffset;
 }
 
-bool isKeyPressed(int key)
-{
+bool isKeyPressed(int key) {
 	return keysPressed[key];
 }

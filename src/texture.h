@@ -1,7 +1,6 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
-typedef struct
-{
+typedef struct{
 	unsigned int ID;
 	unsigned int width, height;
 	unsigned int internalFormat; // format of texture object

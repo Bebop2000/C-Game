@@ -3,12 +3,11 @@
 #include "core.h"
 #include "blocks/block.h"
 
-typedef struct
-{
+typedef struct{
 	unsigned int VAO, VBO, EBO;
 	int vertices;
 }Mesh;
-
+void prepareCubeRender();
 void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram);
 void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram);
 //void renderFlower(Block block, unsigned int shaderProgram);

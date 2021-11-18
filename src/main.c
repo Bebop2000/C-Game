@@ -5,8 +5,7 @@
 
 
 void framebufferSizeCallbackM(GLFWwindow* window, int width, int height);
-int main()
-{
+int main() {
 	Scene nextScene = testScene;
 
 	GLFWwindow* window = makeWindow(960, 540, "beans");
@@ -21,16 +20,13 @@ int main()
 
 	double const TARGET_FPS = 60.0;
 
-	while (!glfwWindowShouldClose(window))
-	{
+	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClear(GL_COLOR_BUFFER_BIT);
-		if (isKeyPressed(GLFW_KEY_ESCAPE))
-		{
+		if(isKeyPressed(GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(window, GLFW_TRUE);
 		}
-		if (nextScene == testScene)
-		{
+		if(nextScene == testScene) {
 			runTestScene(window);
 		}
 	}
@@ -40,7 +36,6 @@ int main()
 }
 
 
-void framebufferSizeCallbackM(GLFWwindow* window, int width, int height)
-{
+void framebufferSizeCallbackM(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }

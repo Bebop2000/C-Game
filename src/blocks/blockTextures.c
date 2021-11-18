@@ -24,16 +24,15 @@ void blockTexturesInit() {
 	loadTextureFromFile(&greenTexture, green, 4);
 }
 
-unsigned int getBlockTexture(BlockID textureID)
-{
-	if (textureID == DEFAULT_BLOCK)
+unsigned int getBlockTexture(BlockID textureID) {
+	if(textureID == DEFAULT_BLOCK)
 		return defaultTexture.ID;
-	if (textureID == CRAFTING_TABLE_BLOCK)
+	if(textureID == CRAFTING_TABLE_BLOCK)
 		return craftingTexture.ID;
-	if (textureID == ROSE_BLOCK)
+	if(textureID == ROSE_BLOCK)
 		return roseTexture.ID;
-	if (textureID == FLOOR)
+	if(textureID == FLOOR)
 		return floorTexture.ID;
-	if (textureID == GREEN)
+	if(textureID == GREEN)
 		return greenTexture.ID;
 }

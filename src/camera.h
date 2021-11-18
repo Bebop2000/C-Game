@@ -2,7 +2,7 @@
 #define CAMERA_H
 #include "core.h"
 
-typedef struct CameraData {
+typedef struct CameraData{
 	vec3 cameraPos;
 	vec3 cameraTarget;
 	vec3 cameraFront;
