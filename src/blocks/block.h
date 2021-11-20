@@ -2,30 +2,13 @@
 #define BLOCK_H
 #include "core.h"
 
-typedef enum BlockID
-{
-	DEFAULT_BLOCK,
+typedef enum BlockID{
 	CRAFTING_TABLE_BLOCK,
-	ROSE_BLOCK,
-	GRASS_BLOCK,
-	FLOOR,
 	GREEN,
-	AIR
+	ROSE_BLOCK,
+	FLOOR,
+	AIR,
+	DEFAULT_BLOCK
 }BlockID;
 
-typedef struct DefaultBlock {
-	vec3 location;
-	vec3 rotation;
-	vec3 scaleV;
-	float scaleS;
-	unsigned int textureID;
-}Block;
-
-Block defaultBlockInit();
-Block craftingTableBlockInit();
-Block roseBlockInit();
-Block grassBlockInit();
-Block floorInit();
-Block greenInit();
-//void renderFlower(DefaultBlock);
 #endif

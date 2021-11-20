@@ -3,13 +3,15 @@
 #include "core.h"
 #include "blocks/block.h"
 
-struct chunk{   
+typedef struct{   
     //           x   z   y
     BlockID grid[16][16][256];
-};
+    int x;
+    int z;
+}Chunk;
 
-typedef struct chunk Chunk;
-
-Chunk generateChunk();
+Chunk generateChunk(int x, int y);
+void renderChunk(Chunk chunk, unsigned int shaderProgram);
+void chunkGenInit();
 
 #endif
