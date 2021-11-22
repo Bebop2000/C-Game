@@ -1,7 +1,8 @@
 #include "core.h"
 #include "shaderProgram.h"
-
+#ifdef linux
 #include <unistd.h>
+#endif
 
 static char* readFile(const char* filepath) {
 	char* buffer;
@@ -9,7 +10,8 @@ static char* readFile(const char* filepath) {
 	FILE* file = fopen(filepath, "r");
 	if(file == NULL) {
 		printf("Error: Couldn't open shader file %s\n", filepath);
-		return NULL;
+		printf("1\n");
+		return "";
 	}
 	else{
 		fseek(file, 0L, SEEK_END);
@@ -51,7 +53,7 @@ unsigned int compileShaders(const char* vertexPath, const char* fragPath) {
 	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &success);
 	if(!success) {
 		glGetShaderInfoLog(fragmentShaderID, 512, NULL, infoLog);
-		printf("Error compiling vertex shader:\n%s\n", infoLog);
+		printf("Error compiling fragment shader:\n%s\n", infoLog);
 	}
 	else{
 		printf("Fragment shader compiled successfully\n");

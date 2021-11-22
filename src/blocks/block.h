@@ -3,12 +3,11 @@
 #include "core.h"
 
 typedef enum BlockID{
+	DEFAULT_BLOCK,
 	CRAFTING_TABLE_BLOCK,
 	GREEN,
-	ROSE_BLOCK,
 	FLOOR,
 	AIR,
-	DEFAULT_BLOCK
 }BlockID;
 
 #endif

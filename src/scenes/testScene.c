@@ -37,8 +37,6 @@ int windowHeight;
 vec3 craftingTableLocation = {0.0f, 0.0f, 0.0f};
 vec3 floorLoc = {0.0, -1.0, 0.0};
 vec3 floorRot = {M_PI / 4.0f, 0.0f, 0.0f};
-Chunk testChunk;
-Chunk testChunk2;
 
 GLFWwindow* window;
 
@@ -52,28 +50,36 @@ void runTestScene(GLFWwindow *glfwWindow) {
 	}
 	cleanup();
 }
-Chunk chunks[1000];
+Chunk *chunks[1000];
 static int init() {
 	printf("Initializing testScene\n");
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSetCursorPosCallback(window, mouseCallback);
 	framebufferSizeCallback(window, 960, 540);
 	setClearColour(48, 117, 186, 255);
+#ifdef linux
 	shaderProgram = compileShaders("../res/shaders/defaultVertexShader.glsl",
-								   "../res/shaders/defaultFragShader.glsl");
+									"../res/shaders/defaultFragShader.glsl");
+#else
+	shaderProgram = compileShaders("C:/C-Game/res/shaders/defaultVertexShader.glsl",
+								   "C:/C-Game/res/shaders/defaultFragShader.glsl");
+#endif
 	if(!shaderProgram) {
 		printf("Error compiling default shader\n");
 		return 0;
 	}
-
+	printf("a\n");
 	int i = 0;
 	for(int x=0; x<8; x++){
 		for(int y=0; y<8; y++){
-			Chunk tmp = generateChunk(x, y);
+			Chunk *tmp;
+			tmp = malloc(sizeof(Chunk));
+			generateChunk(tmp, x, y);
 			chunks[i] = tmp;
 			i++;
 		}
 	}
+	printf("1\n");
 
 	camera = cameraInit();
 	camera.cameraPos[2] = -4.0f;
@@ -81,10 +87,13 @@ static int init() {
 	camera.useFront = true;
 	view(camera);
 	perspective();
+	printf("2\n");
 
 	rendererInit();
 	blockTexturesInit();
 	chunkGenInit();
+
+	printf("3\n");
 
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
@@ -93,6 +102,7 @@ static int init() {
 	glCullFace(GL_FRONT);
 	glFrontFace(GL_CCW);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	printf("4\n");
 
 	return 1;
 }
@@ -106,16 +116,13 @@ float shiftMultCache = 0.0f;
 bool sceneShouldClose;
 bool cull = false;
 
-bool c1 = true;
-bool c2 = true;
-
 static void loop() {
 	sceneShouldClose = false;
 	glUseProgram(shaderProgram);
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
-		printf("FPS: %f\n", 1.0f/dt);
+		//printf("FPS: %f\n", 1.0f/dt);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -127,9 +134,7 @@ static void loop() {
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
 		setShaderInt("instanced", 0, shaderProgram);
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
-		for(int c=0; c<1; c++){
-			renderChunk(chunks[c], shaderProgram);
-		}
+		renderChunks(chunks, 4, shaderProgram);
 
 		processInput();
 		glfwSwapBuffers(window);
@@ -163,12 +168,6 @@ static void processInput() {
 	}
 	if(isKeyPressed(GLFW_KEY_F)) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-	if(isKeyPressed(GLFW_KEY_1)) {
-		c1 = true;
-	}
-	if(isKeyPressed(GLFW_KEY_2)) {
-		c1 = false;
 	}
 	if(isKeyPressed(GLFW_KEY_T)) {
 		camera.pitch = 0.0f;

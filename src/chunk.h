@@ -2,16 +2,19 @@
 #define CHUNK_H
 #include "core.h"
 #include "blocks/block.h"
+#define CHUNKX 64
+#define CHUNKY 128
+#define CHUNKZ 64
 
 typedef struct{   
     //           x   z   y
-    BlockID grid[16][16][256];
+    char grid[CHUNKX][CHUNKZ][CHUNKY];
     int x;
     int z;
 }Chunk;
 
-Chunk generateChunk(int x, int y);
-void renderChunk(Chunk chunk, unsigned int shaderProgram);
+void generateChunk(Chunk *chunk, int x, int y);
+void renderChunks(Chunk* chunk[], int size, unsigned int shaderProgram);
 void chunkGenInit();
 
 #endif

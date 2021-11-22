@@ -10,12 +10,21 @@ Texture floorTexture;
 Texture greenTexture;
 
 void blockTexturesInit() {
+#ifdef linux
 	const char* defTexture = "../res/textures/default.png";
 	const char* table = "../res/textures/crafting_table.png";
 	const char* rose =  "../res/textures/rose.png";
 	const char* grass = "../res/textures/grass.png";
 	const char* floor = "../res/textures/floor.png";
 	const char* green = "../res/textures/green.png";
+#else
+	const char* defTexture = "C:/C-Game/res/textures/default.png";
+	const char* table = "C:/C-Game/res/textures/crafting_table.png";
+	const char* rose = "C:/C-Game/res/textures/rose.png";
+	const char* grass = "C:/C-Game/res/textures/grass.png";
+	const char* floor = "C:/C-Game/res/textures/floor.png";
+	const char* green = "C:/C-Game/res/textures/green.png";
+#endif
 	loadTextureFromFile(&craftingTexture, table, 4);
 	loadTextureFromFile(&roseTexture, rose, 4);
 	loadTextureFromFile(&grassTexture, grass, 4);
@@ -29,8 +38,8 @@ unsigned int getBlockTexture(BlockID textureID) {
 		return defaultTexture.ID;
 	if(textureID == CRAFTING_TABLE_BLOCK)
 		return craftingTexture.ID;
-	if(textureID == ROSE_BLOCK)
-		return roseTexture.ID;
+	//if(textureID == ROSE_BLOCK)
+	//	return roseTexture.ID;
 	if(textureID == FLOOR)
 		return floorTexture.ID;
 	if(textureID == GREEN)
