@@ -35,10 +35,12 @@ int windowWidth;
 int windowHeight;
 
 vec3 craftingTableLocation = {0.0f, 0.0f, 0.0f};
-vec3 floorLoc = {0.0, -1.0, 0.0};
-vec3 floorRot = {M_PI / 4.0f, 0.0f, 0.0f};
 
 GLFWwindow* window;
+
+ChunkManager *chunkManager;
+
+Chunk *chunks[1000];
 
 void runTestScene(GLFWwindow *glfwWindow) {
 	window = glfwWindow;
@@ -50,7 +52,6 @@ void runTestScene(GLFWwindow *glfwWindow) {
 	}
 	cleanup();
 }
-Chunk *chunks[1000];
 static int init() {
 	printf("Initializing testScene\n");
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
@@ -68,7 +69,10 @@ static int init() {
 		printf("Error compiling default shader\n");
 		return 0;
 	}
-	printf("a\n");
+
+	chunkManagerInit(chunkManager);
+
+	//
 	int i = 0;
 	for(int x=0; x<8; x++){
 		for(int y=0; y<8; y++){
@@ -79,7 +83,7 @@ static int init() {
 			i++;
 		}
 	}
-	printf("1\n");
+	//
 
 	camera = cameraInit();
 	camera.cameraPos[2] = -4.0f;
@@ -87,13 +91,10 @@ static int init() {
 	camera.useFront = true;
 	view(camera);
 	perspective();
-	printf("2\n");
 
 	rendererInit();
 	blockTexturesInit();
 	chunkGenInit();
-
-	printf("3\n");
 
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
@@ -102,7 +103,6 @@ static int init() {
 	glCullFace(GL_FRONT);
 	glFrontFace(GL_CCW);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	printf("4\n");
 
 	return 1;
 }
@@ -134,7 +134,7 @@ static void loop() {
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
 		setShaderInt("instanced", 0, shaderProgram);
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
-		renderChunks(chunks, 4, shaderProgram);
+		renderChunks(chunks, 1, shaderProgram);
 
 		processInput();
 		glfwSwapBuffers(window);

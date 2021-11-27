@@ -4,8 +4,8 @@
 
 typedef enum BlockID{
 	DEFAULT_BLOCK,
-	CRAFTING_TABLE_BLOCK,
 	GREEN,
+	CRAFTING_TABLE_BLOCK,
 	FLOOR,
 	AIR,
 }BlockID;
