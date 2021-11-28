@@ -6,22 +6,28 @@
 #define CHUNKY 128
 #define CHUNKZ 16
 
-typedef struct{
-    Chunk *grid;
-    int x, y;
-}ChunkManager;
+// For data:
+// for each bit: 1=yes 0=no
+// bit1: has been checked if visible
+// bit2: is visible
+typedef struct {
+    byte blockID;
+    byte data;
+}Block;
 
-typedef struct{   
-    //         x       y      z
-    char grid[CHUNKX][CHUNKY][CHUNKZ];
-    ChunkManager* manager;
-    int x;
-    int z;
+typedef struct {
+    Block grid[CHUNKX][CHUNKY][CHUNKZ];
+    int x, y;
 }Chunk;
 
-void chunkManagerInit(ChunkManager *cm);
-void generateChunk(Chunk *chunk, ChunkManager *cm);
-void renderChunks(Chunk* chunk[], int size, unsigned int shaderProgram);
+typedef struct{
+    //array of chunks
+    Chunk** grid;
+    int size;
+}ChunkManager;
+
+void generateChunk(ChunkManager* cm, int chunkx, int chunky);
+void renderChunks(ChunkManager* cm, int i, int j, unsigned int shaderProgram);
 void chunkGenInit();
 
 #endif

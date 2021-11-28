@@ -38,9 +38,7 @@ vec3 craftingTableLocation = {0.0f, 0.0f, 0.0f};
 
 GLFWwindow* window;
 
-ChunkManager *chunkManager;
-
-Chunk *chunks[1000];
+ChunkManager chunkManager;
 
 void runTestScene(GLFWwindow *glfwWindow) {
 	window = glfwWindow;
@@ -53,6 +51,7 @@ void runTestScene(GLFWwindow *glfwWindow) {
 	cleanup();
 }
 static int init() {
+	printf("Size: %zu\n", sizeof(Chunk*));
 	printf("Initializing testScene\n");
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSetCursorPosCallback(window, mouseCallback);
@@ -70,20 +69,16 @@ static int init() {
 		return 0;
 	}
 
-	chunkManagerInit(chunkManager);
-
-	//
-	int i = 0;
-	for(int x=0; x<8; x++){
-		for(int y=0; y<8; y++){
-			Chunk *tmp;
-			tmp = malloc(sizeof(Chunk));
-			generateChunk(tmp, x, y);
-			chunks[i] = tmp;
-			i++;
+	chunkManager.grid = calloc(500 * 500, sizeof(Chunk*));
+	if (chunkManager.grid == NULL) {
+		printf("In init(): allocating memory for ChunkManager->grid failed\n");
+		return 0;
+	}
+	for(int x=0; x<64; x++){
+		for(int y=0; y<64; y++){
+			generateChunk(&chunkManager, x, y);
 		}
 	}
-	//
 
 	camera = cameraInit();
 	camera.cameraPos[2] = -4.0f;
@@ -134,7 +129,7 @@ static void loop() {
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
 		setShaderInt("instanced", 0, shaderProgram);
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
-		renderChunks(chunks, 1, shaderProgram);
+		renderChunks(&chunkManager, 8, 8, shaderProgram);
 
 		processInput();
 		glfwSwapBuffers(window);
