@@ -69,14 +69,27 @@ static int init() {
 		return 0;
 	}
 
-	chunkManager.grid = calloc(500 * 500, sizeof(Chunk*));
-	if (chunkManager.grid == NULL) {
+	chunkManager.chunks = calloc(500, sizeof(Chunk*));
+	chunkManager.size = 500;
+	chunkManager.index = 0;
+	if (chunkManager.chunks == NULL) {
 		printf("In init(): allocating memory for ChunkManager->grid failed\n");
 		return 0;
 	}
-	for(int x=0; x<64; x++){
-		for(int y=0; y<64; y++){
+	for(int x=0; x<5; x++){
+		for(int y=0; y<5; y++){
+			//printf("ChunkGen\n");
 			generateChunk(&chunkManager, x, y);
+			if (chunkManager.index == chunkManager.size) {
+				Chunk* tmp = realloc(chunkManager.chunks, (chunkManager.size * sizeof(Chunk*)) + sizeof(Chunk*) * 500);
+				if (tmp == NULL) {
+					printf("Error reallocating %zu bytes of memory for chunkManager.chunks\n", ((chunkManager.size * sizeof(Chunk*)) + sizeof(Chunk*) * 500));
+				}
+				else {
+					chunkManager.chunks = tmp;
+					chunkManager.size += 500;
+				}
+			}
 		}
 	}
 
@@ -105,11 +118,19 @@ static int init() {
 float startTime = 0.0f;
 float endTime = 0.0f;
 float dt = 0.0f;
-float mult = 10.0f;
+float mult = 30.0f;
 float shiftMult = 2.0f;
 float shiftMultCache = 0.0f;
 bool sceneShouldClose;
 bool cull = false;
+
+
+float left = 0.0f;
+float right = 10.0f;
+float bottom = 0.0f;
+float top = 10.0f;
+float near = 0.0f;
+float far = 20.0f;
 
 static void loop() {
 	sceneShouldClose = false;
@@ -127,9 +148,12 @@ static void loop() {
 		glm_mat4_mul(projectionMatrix, viewMatrix, shaderMatrix);
 		setShaderMat4("projection", projectionMatrix, shaderProgram);
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
-		setShaderInt("instanced", 0, shaderProgram);
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
-		renderChunks(&chunkManager, 8, 8, shaderProgram);
+		mat4 frustum;
+		glm_frustum(0.0f, 10, 0.0f, 10, near, far, frustum);
+		for (int i = 0; i < 16; i++) {
+			renderChunk(&chunkManager, i, shaderProgram, shaderMatrix);
+		}
 
 		processInput();
 		glfwSwapBuffers(window);
@@ -138,7 +162,7 @@ static void loop() {
 		endTime = (float)glfwGetTime();
 	}
 }
-
+	
 // get rid of entities and everything
 static void cleanup() {
 }
@@ -181,10 +205,10 @@ static void processInput() {
 		strafeCameraRight(&camera, dt * mult);
 	}
 	if(isKeyPressed(GLFW_KEY_UP)) {
-		mult += dt * 10;
+		far += 1;
 	}
 	if(isKeyPressed(GLFW_KEY_DOWN)) {
-		mult -= dt * 10;
+		far -= 1;
 	}
 	if(isKeyPressed(GLFW_KEY_SPACE)) {
 		camera.cameraPos[1] += mult / 2.0f;

@@ -17,17 +17,18 @@ typedef struct {
 
 typedef struct {
     Block grid[CHUNKX][CHUNKY][CHUNKZ];
-    int x, y;
+    int x, z;
 }Chunk;
 
 typedef struct{
     //array of chunks
-    Chunk** grid;
+    Chunk** chunks;
+    int index;
     int size;
 }ChunkManager;
 
 void generateChunk(ChunkManager* cm, int chunkx, int chunky);
-void renderChunks(ChunkManager* cm, int i, int j, unsigned int shaderProgram);
+void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frustum);
 void chunkGenInit();
 
 #endif
