@@ -2,6 +2,7 @@
 #include "chunk.h"
 #include "blocks/block.h"
 #include "render.h"
+#include "noise.h"
 #include "../vendor/cglm/box.h"
 #include "../vendor/cglm/frustum.h"
 
@@ -18,6 +19,57 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
     else {
         chunk->x = chunkx;
         chunk->z = chunkz;
+        
+        //int noise[16][16];
+        /*
+        for(int x=0; x < CHUNKX; x++) {
+            for(int z=0; z<CHUNKZ; z++) {
+                noise[x][z] = (int)(perlin2d(x+chunkx*CHUNKX, z+chunkz*CHUNKZ, 0.003, 10) * 100);
+                if(noise[x][z] > 127 || noise[x][z] < 0){
+                    noise[x][z] = 127;
+                }
+
+
+                //printf("%i\n", noise2d[x][z]);
+            }
+        }*/
+        
+       
+       /*
+        int noise3d[16][64][16];
+        for(int x=0; x< CHUNKX; x++) {
+            for(int y=0; y<CHUNKY; y++) {
+                for(int z=0; z<CHUNKZ; z++) {
+                    noise3d[x][y][z] = noise3(x, y, z);
+                }
+            }
+        }
+        */
+
+        for(int x=0; x < CHUNKX; x++) {
+            for(int y=0; y<CHUNKY; y++) {
+                for(int z=0; z<CHUNKZ; z++) {
+                    //int height = noise[x][z];
+                    //printf("%i\n", height);
+                    //if(height == y){
+                    //    chunk->grid[x][y][z].blockID = GREEN;
+                    //}
+                    //else {
+                    //    chunk->grid[x][y][z].blockID = AIR;
+                    // }
+
+                    float value = noise3((float)x+chunkx*CHUNKX, (float)y, (float)z+chunkz*CHUNKZ);
+                    //printf("%f\n", value);
+                    if (value < 0.5) {
+                        chunk->grid[x][y][z].blockID = AIR;
+                    }
+                    else {
+                        chunk->grid[x][y][z].blockID = GREEN;
+                    }
+                }
+            }
+        }
+        /*
         for (int x = 0; x < CHUNKX; x++) {
             for (int y = 0; y < CHUNKY; y++) {
                 for (int z = 0; z < CHUNKZ; z++) {
@@ -42,6 +94,7 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
                 }
             }
         }
+        */
         //
         for (int x = 0; x < CHUNKX; x++) {
             for (int y = 0; y < CHUNKY; y++) {
@@ -97,6 +150,7 @@ void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frust
         if (chunk == NULL) {
             return;
         }
+        int blockCount = 0;
         for (int x = 0; x < CHUNKX; x++) {
             for (int y = 0; y < CHUNKY; y++) {
                 for (int z = 0; z < CHUNKZ; z++) {
@@ -259,6 +313,7 @@ void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frust
                 }
             }
         }
+        //printf("%i\n", blockCount);
     }
 }
 

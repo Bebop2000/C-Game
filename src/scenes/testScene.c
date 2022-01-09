@@ -76,8 +76,8 @@ static int init() {
 		printf("In init(): allocating memory for ChunkManager->grid failed\n");
 		return 0;
 	}
-	for(int x=0; x<5; x++){
-		for(int y=0; y<5; y++){
+	for(int x=0; x<6; x++){
+		for(int y=0; y<6; y++){
 			//printf("ChunkGen\n");
 			generateChunk(&chunkManager, x, y);
 			if (chunkManager.index == chunkManager.size) {
@@ -151,7 +151,7 @@ static void loop() {
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
 		mat4 frustum;
 		glm_frustum(0.0f, 10, 0.0f, 10, near, far, frustum);
-		for (int i = 0; i < 16; i++) {
+		for (int i = 0; i < 32; i++) {
 			renderChunk(&chunkManager, i, shaderProgram, shaderMatrix);
 		}
 

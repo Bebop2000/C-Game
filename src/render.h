@@ -8,6 +8,7 @@ typedef struct{
 	int vertices;
 }Mesh;
 void prepareCubeRender();
+void prepareQuadRender();
 void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram);
 void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram);
 //void renderFlower(Block block, unsigned int shaderProgram);

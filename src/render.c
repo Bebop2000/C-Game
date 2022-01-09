@@ -17,15 +17,17 @@ void prepareCubeRender(){
 	glBindVertexArray(cubeMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeMesh.EBO);
-		//glEnableVertexAttribArray(0);
-	//glEnableVertexAttribArray(1);
+}
+
+void prepareQuadRender(){
+	glBindVertexArray(quadMesh.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
 }
 void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
 	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
 	glm_mat4_identity(transform);
 	glm_translate(transform, location);
-	//vec3 uScale = {scale, scale, scale};
-	//glm_scale(transform, uScale);
 	setShaderMat4("model", transform, shaderProgram);
 	glDrawElements(GL_TRIANGLES, cubeMesh.vertices, GL_UNSIGNED_INT, 0);
 }
@@ -35,9 +37,6 @@ void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderPr
 	glBindVertexArray(quadMesh.VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
-	//not sure if this is necessary or not
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
 	glm_mat4_identity(transform);
 	glm_translate(transform, location);
 	vec3 uScale = {scale, scale, scale};
@@ -45,23 +44,6 @@ void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderPr
 	setShaderMat4("model", transform, shaderProgram);
 	glDrawElements(GL_TRIANGLES, quadMesh.vertices, GL_UNSIGNED_INT, 0);
 }
-
-/*
-void renderFlower(Block blockID, vec3 location, float scale, unsigned int shaderProgram)
-{
-	//create copy of block into block2 and rotate that block by 90 degrees on the y axis
-	//then render both quads
-	vec3 Test = {scale, scale, scale};
-	// rotate first block 45 degrees
-	block.rotation[1] += 45.0f * (float)M_PI / 180.0f;
-	Block block2;
-	memcpy(&block2, &block, sizeof(Block));
-	// rotate second block 90 degrees
-	block2.rotation[1] = block.rotation[1] + (float)M_PI / 2.0f;
-	renderQuad(block, shaderProgram);
-	renderQuad(block2, shaderProgram);
-}
-*/
 
 void bindQuadMesh() {
 	glBindVertexArray(quadMesh.VAO);
