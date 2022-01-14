@@ -7,6 +7,7 @@ float lin_inter(float x, float y, float s);
 float smooth_inter(float x, float y, float s);
 float noise2d(float x, float y);
 float perlin2d(float x, float y, float freq, int depth);
+float pnoise3(float x, float y, float z, int px, int py, int pz);
 
 #define FADE(t) ( t * t * t * ( t * ( t * 6 - 15 ) + 10 ) )
 

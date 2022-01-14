@@ -1,7 +1,7 @@
 // BORROWED CODE
 #include "noise.h"
 #include "stdio.h"
-static int SEED = 0;
+static int SEED = 6;
 
 static int hash[] = {208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,245,255,247,247,40,
                      185,248,251,245,28,124,204,204,76,36,1,107,28,234,163,202,224,245,128,167,204,
@@ -97,11 +97,33 @@ unsigned char perm[] = {151,160,137,91,90,15,
   138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
 };
 
-float grad3( int hash, float x, float y , float z ) {
+float grad1(int hash, float x) {
+    int h = hash & 15;
+    float grad = 1.0 + (h & 7);  // Gradient value 1.0, 2.0, ..., 8.0
+    if (h & 8) grad = -grad;         // and a random sign for the gradient
+    return (grad * x);           // Multiply the gradient with the distance
+}
+
+float grad2(int hash, float x, float y) {
+    int h = hash & 7;      // Convert low 3 bits of hash code
+    float u = h < 4 ? x : y;  // into 8 simple gradient directions,
+    float v = h < 4 ? y : x;  // and compute the dot product with (x,y).
+    return ((h & 1) ? -u : u) + ((h & 2) ? -2.0 * v : 2.0 * v);
+}
+
+float grad3(int hash, float x, float y, float z) {
     int h = hash & 15;     // Convert low 4 bits of hash code into 12 simple
-    float u = h<8 ? x : y; // gradient directions, and compute dot product.
-    float v = h<4 ? y : h==12||h==14 ? x : z; // Fix repeats at h = 12 to 15
-    return ((h&1)? -u : u) + ((h&2)? -v : v);
+    float u = h < 8 ? x : y; // gradient directions, and compute dot product.
+    float v = h < 4 ? y : h == 12 || h == 14 ? x : z; // Fix repeats at h = 12 to 15
+    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+
+float grad4(int hash, float x, float y, float z, float t) {
+    int h = hash & 31;      // Convert low 5 bits of hash code into 32 simple
+    float u = h < 24 ? x : y; // gradient directions, and compute dot product.
+    float v = h < 16 ? y : z;
+    float w = h < 8 ? z : t;
+    return ((h & 1) ? -u : u) + ((h & 2) ? -v : v) + ((h & 4) ? -w : w);
 }
 
 float noise3( float x, float y, float z )
@@ -150,6 +172,55 @@ float noise3( float x, float y, float z )
     nx1 = LERP( r, nxy0, nxy1 );
 
     n1 = LERP( t, nx0, nx1 );
-    printf("%f\n", 0.936f * ( LERP( s, n0, n1 ) ));
     return 0.936f * ( LERP( s, n0, n1 ) );
+}
+
+float pnoise3(float x, float y, float z, int px, int py, int pz)
+{
+    int ix0, iy0, ix1, iy1, iz0, iz1;
+    float fx0, fy0, fz0, fx1, fy1, fz1;
+    float s, t, r;
+    float nxy0, nxy1, nx0, nx1, n0, n1;
+
+    ix0 = FASTFLOOR(x); // Integer part of x
+    iy0 = FASTFLOOR(y); // Integer part of y
+    iz0 = FASTFLOOR(z); // Integer part of z
+    fx0 = x - ix0;        // Fractional part of x
+    fy0 = y - iy0;        // Fractional part of y
+    fz0 = z - iz0;        // Fractional part of z
+    fx1 = fx0 - 1.0f;
+    fy1 = fy0 - 1.0f;
+    fz1 = fz0 - 1.0f;
+    ix1 = ((ix0 + 1) % px) & 0xff; // Wrap to 0..px-1 and wrap to 0..255
+    iy1 = ((iy0 + 1) % py) & 0xff; // Wrap to 0..py-1 and wrap to 0..255
+    iz1 = ((iz0 + 1) % pz) & 0xff; // Wrap to 0..pz-1 and wrap to 0..255
+    ix0 = (ix0 % px) & 0xff;
+    iy0 = (iy0 % py) & 0xff;
+    iz0 = (iz0 % pz) & 0xff;
+
+    r = FADE(fz0);
+    t = FADE(fy0);
+    s = FADE(fx0);
+
+    nxy0 = grad3(perm[ix0 + perm[iy0 + perm[iz0]]], fx0, fy0, fz0);
+    nxy1 = grad3(perm[ix0 + perm[iy0 + perm[iz1]]], fx0, fy0, fz1);
+    nx0 = LERP(r, nxy0, nxy1);
+
+    nxy0 = grad3(perm[ix0 + perm[iy1 + perm[iz0]]], fx0, fy1, fz0);
+    nxy1 = grad3(perm[ix0 + perm[iy1 + perm[iz1]]], fx0, fy1, fz1);
+    nx1 = LERP(r, nxy0, nxy1);
+
+    n0 = LERP(t, nx0, nx1);
+
+    nxy0 = grad3(perm[ix1 + perm[iy0 + perm[iz0]]], fx1, fy0, fz0);
+    nxy1 = grad3(perm[ix1 + perm[iy0 + perm[iz1]]], fx1, fy0, fz1);
+    nx0 = LERP(r, nxy0, nxy1);
+
+    nxy0 = grad3(perm[ix1 + perm[iy1 + perm[iz0]]], fx1, fy1, fz0);
+    nxy1 = grad3(perm[ix1 + perm[iy1 + perm[iz1]]], fx1, fy1, fz1);
+    nx1 = LERP(r, nxy0, nxy1);
+
+    n1 = LERP(t, nx0, nx1);
+
+    return 0.936f * (LERP(s, n0, n1));
 }
