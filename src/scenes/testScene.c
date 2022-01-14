@@ -76,10 +76,16 @@ static int init() {
 		printf("In init(): allocating memory for ChunkManager->grid failed\n");
 		return 0;
 	}
-	for(int x=0; x<6; x++){
-		for(int y=0; y<6; y++){
+	printf("Generating starting chunks\n");
+	int index=0;
+	for(int x=0; x<10; x++){
+		for(int y=0; y<10; y++){
 			//printf("ChunkGen\n");
+			//printf("Generating Chunk\n");
 			generateChunk(&chunkManager, x, y);
+			//printf("Preparing chunk\n");
+			prepareChunkMesh(chunkManager.chunks[index]);
+			index++;
 			if (chunkManager.index == chunkManager.size) {
 				Chunk* tmp = realloc(chunkManager.chunks, (chunkManager.size * sizeof(Chunk*)) + sizeof(Chunk*) * 500);
 				if (tmp == NULL) {
@@ -92,9 +98,17 @@ static int init() {
 			}
 		}
 	}
-
+	#define NUM 1;
+	//printf("Preparing chunk\n");
+	//prepareChunkMesh(chunkManager.chunks[1]);
+	//printf("Vertices: %i\n", chunkManager.chunks[1]->vertices);
+	//printArray(chunkManager.chunks[1]->mesh, 5, chunkManager.chunks[1]->vertices * 5);
+	//printArrayInt(chunkManager.chunks[1]->indices, 3, chunkManager.chunks[1]->indiceCount);
+	printf("%i\n", chunkManager.chunks[1]->indiceCount);
+	printf("Preparing camera\n");
 	camera = cameraInit();
-	camera.cameraPos[2] = -4.0f;
+	camera.cameraPos[2] = 0.0f;
+	camera.cameraPos[1] = 60.0f;
 	camera.cameraPos[0] = 0.0f;
 	camera.useFront = true;
 	view(camera);
@@ -133,8 +147,10 @@ float near = 0.0f;
 float far = 20.0f;
 
 static void loop() {
+	printf("Loop start\n");
 	sceneShouldClose = false;
 	glUseProgram(shaderProgram);
+	prepareCubeRender();
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
@@ -148,12 +164,21 @@ static void loop() {
 		glm_mat4_mul(projectionMatrix, viewMatrix, shaderMatrix);
 		setShaderMat4("projection", projectionMatrix, shaderProgram);
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
+		//printf("Rending block\n");
+		prepareCubeRender();
 		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
 		mat4 frustum;
 		glm_frustum(0.0f, 10, 0.0f, 10, near, far, frustum);
-		for (int i = 0; i < 32; i++) {
-			renderChunk(&chunkManager, i, shaderProgram, shaderMatrix);
+		vec3 loc = {0.0f, 0.0f, 0.0f};
+		//printf("%i\n", chunkManager.index);
+		
+		
+		for(int i=0; i<90; i++) {
+			renderChunkMesh(chunkManager.chunks[i], shaderProgram);
 		}
+		//renderChunkMesh(chunkManager.chunks[1], shaderProgram);
+		//renderChunk(&chunkManager, 90, shaderProgram, shaderMatrix);
+		//printf("%f\n", 1.0f/dt);
 
 		processInput();
 		glfwSwapBuffers(window);
