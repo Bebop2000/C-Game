@@ -19,83 +19,23 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
     else {
         chunk->x = chunkx;
         chunk->z = chunkz;
-        
-        //int noise[16][16];
-        /*
-        for(int x=0; x < CHUNKX; x++) {
-            for(int z=0; z<CHUNKZ; z++) {
-                noise[x][z] = (int)(perlin2d(x+chunkx*CHUNKX, z+chunkz*CHUNKZ, 0.003, 10) * 100);
-                if(noise[x][z] > 127 || noise[x][z] < 0){
-                    noise[x][z] = 127;
-                }
-
-
-                //printf("%i\n", noise2d[x][z]);
-            }
-        }*/
-        
-       
-       /*
-        int noise3d[16][64][16];
-        for(int x=0; x< CHUNKX; x++) {
-            for(int y=0; y<CHUNKY; y++) {
-                for(int z=0; z<CHUNKZ; z++) {
-                    noise3d[x][y][z] = noise3(x, y, z);
-                }
-            }
-        }
-        */
+        chunk->blockCount = 0;
 
         for(int x=0; x < CHUNKX; x++) {
             for(int y=0; y<CHUNKY; y++) {
                 for(int z=0; z<CHUNKZ; z++) {
-                    //int height = noise[x][z];
+                    int height = (int)(perlin2d(x+chunkx*CHUNKX, z+chunkz*CHUNKZ, 0.003, 10) * 100);
                     //printf("%i\n", height);
-                    //if(height == y){
-                    //    chunk->grid[x][y][z].blockID = GREEN;
-                    //}
-                    //else {
-                    //    chunk->grid[x][y][z].blockID = AIR;
-                    // }
-
-                    float value = noise3((float)x+chunkx*CHUNKX, (float)y, (float)z+chunkz*CHUNKZ);
-                    //printf("%f\n", value);
-                    if (value < 0.5) {
-                        chunk->grid[x][y][z].blockID = AIR;
-                    }
-                    else {
+                    if(height == y){
                         chunk->grid[x][y][z].blockID = GREEN;
-                    }
-                }
-            }
-        }
-        /*
-        for (int x = 0; x < CHUNKX; x++) {
-            for (int y = 0; y < CHUNKY; y++) {
-                for (int z = 0; z < CHUNKZ; z++) {
-                    chunk->grid[x][y][z].data = 0x0;
-                    if (y < 70) {
-                    // pick block for location
-                        char block = rand() % 5;
-                        if (block == AIR) {
-                            int w = rand() % 200;
-                            if (w == 3) {
-                                block = AIR;
-                            }
-                            else {
-                                block = GREEN;
-                            }
-                        }
-                        chunk->grid[x][y][z].blockID = block;
+                        chunk->blockCount += 1;
                     }
                     else {
                         chunk->grid[x][y][z].blockID = AIR;
-                    }
+                     }
                 }
             }
         }
-        */
-        //
         for (int x = 0; x < CHUNKX; x++) {
             for (int y = 0; y < CHUNKY; y++) {
                 for (int z = 0; z < CHUNKZ; z++) {
@@ -127,6 +67,7 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
                         tmpdata = tmpdata | BIT1; // set bit1 to 1
                         // tmpdata -> 00000001(b)
                         if (shouldRender) {
+                            chunk->visibleBlockCount++;
                             tmpdata = tmpdata | BIT2; // set bit 2 to 1
                             // tmpdata -> 00000011(b)
                         }
@@ -141,6 +82,179 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
     }
 }
 
+const float cubeVertices[] = {
+
+        //each face consists of two triangles
+		// z plane positive going away from camera
+		// front face
+		-1.0f, -1.0f, -1.0f, 0.5f, 0.5f,	//bottom left		0
+		 1.0f, -1.0f, -1.0f, 1.0f, 0.5f,	//bottom right		1
+		 1.0f,	1.0f, -1.0f, 1.0f, 1.0f,	//top right			2
+         1.0f,	1.0f, -1.0f, 1.0f, 1.0f,    //top right         2
+		-1.0f,  1.0f, -1.0f, 0.5f, 1.0f,	//top left			3
+        -1.0f, -1.0f, -1.0f, 0.5f, 0.5f,
+		// back face
+		 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,		//bottom left		4
+		-1.0f, -1.0f, 1.0f, 0.5f, 0.0f,		//bottom right		5
+		-1.0f,	1.0f, 1.0f, 0.5f, 0.5f,		//top right			6
+        -1.0f,	1.0f, 1.0f, 0.5f, 0.5f,		//top right			6
+		 1.0f,  1.0f, 1.0f, 0.0f, 0.5f,		//top left			7
+         1.0f, -1.0f, 1.0f, 0.0f, 0.0f,		//bottom left		4
+		// left face
+		-1.0f, -1.0f,  1.0f, 0.0f, 0.0f,	// 8
+		-1.0f, -1.0f, -1.0f, 0.5f, 0.0f,	// 9
+		-1.0f,  1.0f, -1.0f, 0.5f, 0.5f,	// 10
+        -1.0f,  1.0f, -1.0f, 0.5f, 0.5f,	// 10
+		-1.0f,	1.0f,  1.0f, 0.0f, 0.5f,	// 11
+        -1.0f, -1.0f,  1.0f, 0.0f, 0.0f,	// 8
+		// right face
+		 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,	//12
+		 1.0f, -1.0f,  1.0f, 0.5f, 0.0f,	//13
+		 1.0f,  1.0f,  1.0f, 0.5f, 0.5f,	//14
+         1.0f,  1.0f,  1.0f, 0.5f, 0.5f,	//14
+		 1.0f,  1.0f, -1.0f, 0.0f, 0.5f,	//15
+         1.0f, -1.0f, -1.0f, 0.0f, 0.0f,	//12
+		// top face
+		-1.0f,  1.0f, -1.0f, 0.0f, 0.5f,	//16
+		 1.0f,  1.0f, -1.0f, 0.5f, 0.5f,	//17
+		 1.0f,  1.0f,  1.0f, 0.5f, 1.0f,	//18
+         1.0f,  1.0f,  1.0f, 0.5f, 1.0f,	//18
+		-1.0f,  1.0f,  1.0f, 0.0f, 1.0f,	//19
+        -1.0f,  1.0f, -1.0f, 0.0f, 0.5f,	//16
+		// bottom face
+		-1.0f, -1.0f, -1.0f, 0.5f, 0.0f,	//20
+		 1.0f, -1.0f, -1.0f, 1.0f, 0.0f,	//21
+		 1.0f, -1.0f,  1.0f, 1.0f, 0.5f,	//22
+         1.0f, -1.0f,  1.0f, 1.0f, 0.5f,	//22
+		-1.0f, -1.0f,  1.0f, 0.5f, 0.5f,	//23
+        -1.0f, -1.0f, -1.0f, 0.5f, 0.0f,	//20
+	};
+const float cubeVertices2[] = {
+
+        //each face consists of two triangles
+		// z plane positive going away from camera
+		// front face
+		-1.0f, -1.0f, -1.0f, 0.5f, 0.5f,	//bottom left		0
+		 1.0f, -1.0f, -1.0f, 1.0f, 0.5f,	//bottom right		1
+		 1.0f,	1.0f, -1.0f, 1.0f, 1.0f,	//top right			2
+		-1.0f,  1.0f, -1.0f, 0.5f, 1.0f,	//top left			3
+		// back face
+		 1.0f, -1.0f, 1.0f, 0.0f, 0.0f,		//bottom left		4
+		-1.0f, -1.0f, 1.0f, 0.5f, 0.0f,		//bottom right		5
+		-1.0f,	1.0f, 1.0f, 0.5f, 0.5f,		//top right			6
+		 1.0f,  1.0f, 1.0f, 0.0f, 0.5f,		//top left			7
+		// left face
+		-1.0f, -1.0f,  1.0f, 0.0f, 0.0f,	// 8
+		-1.0f, -1.0f, -1.0f, 0.5f, 0.0f,	// 9
+		-1.0f,  1.0f, -1.0f, 0.5f, 0.5f,	// 10
+		-1.0f,	1.0f,  1.0f, 0.0f, 0.5f,	// 11
+		// right face
+		 1.0f, -1.0f, -1.0f, 0.0f, 0.0f,	//12
+		 1.0f, -1.0f,  1.0f, 0.5f, 0.0f,	//13
+		 1.0f,  1.0f,  1.0f, 0.5f, 0.5f,	//14
+		 1.0f,  1.0f, -1.0f, 0.0f, 0.5f,	//15
+		// top face
+		-1.0f,  1.0f, -1.0f, 0.0f, 0.5f,	//16
+		 1.0f,  1.0f, -1.0f, 0.5f, 0.5f,	//17
+		 1.0f,  1.0f,  1.0f, 0.5f, 1.0f,	//18
+		-1.0f,  1.0f,  1.0f, 0.0f, 1.0f,	//19
+		// bottom face
+		-1.0f, -1.0f, -1.0f, 0.5f, 0.0f,	//20
+		 1.0f, -1.0f, -1.0f, 1.0f, 0.0f,	//21
+		 1.0f, -1.0f,  1.0f, 1.0f, 0.5f,	//22
+		-1.0f, -1.0f,  1.0f, 0.5f, 0.5f,	//23
+	};
+void prepareChunkMesh(Chunk* chunk) {
+    //printf("In PrepareChunkMesh: allocating memory\n");
+    chunk->mesh = (float*)calloc(chunk->blockCount*24*5, sizeof(float));
+    chunk->indices = (int*)calloc(chunk->blockCount*36, sizeof(int));
+    //printf("BC %i\n", chunk->blockCount);
+    int i = 0;
+    int j = 0;
+    //printf("In PrepareChunkMesh: setting mesh\n");
+    int meshed =0;
+    /*
+    for(int x=0; x<CHUNKX; x++) {
+        for(int y=0; y<CHUNKY; y++) {
+            for(int z=0; z<CHUNKZ; z++) {
+                if(chunk->grid[x][y][z].blockID != AIR) {
+                    count++;
+                    for(int k=0; k<36; k++){
+                        chunk->mesh[i++] = cubeVertices[k*5+0] + x*2;
+                        chunk->mesh[i++] = cubeVertices[k*5+1] + y*2;
+                        chunk->mesh[i++] = cubeVertices[k*5+2] + z*2;
+                        chunk->mesh[i++] = cubeVertices[k*5+3];
+                        chunk->mesh[i++] = cubeVertices[k*5+4];
+                    }
+                    chunk->vertices+=36*10;
+                }
+            }
+        }
+    }*/
+    for(int x=0; x<CHUNKX; x++) {
+        for(int y=0; y<CHUNKY; y++) {
+            for(int z=0; z<CHUNKZ; z++) {
+                if(chunk->grid[x][y][z].blockID != AIR) {
+                    for(int k=0; k<24; k++){
+                        //printf("M\n");
+                        chunk->mesh[i++] = cubeVertices[k*5+0] + x*2;
+                        chunk->mesh[i++] = cubeVertices[k*5+1] + y*2;
+                        chunk->mesh[i++] = cubeVertices[k*5+2] + z*2;
+                        chunk->mesh[i++] = cubeVertices[k*5+3];
+                        chunk->mesh[i++] = cubeVertices[k*5+4];
+                    }
+                    chunk->vertices+=24;
+                    for(int a=0; a<6; a++) {
+                        //printf("%i\n", meshed*24 + a*4 + 0);
+                        chunk->indices[j++] = meshed*24 + a*4 + 0;
+                        chunk->indices[j++] = meshed*24 + a*4 + 1;
+                        chunk->indices[j++] = meshed*24 + a*4 + 2;
+                        chunk->indices[j++] = meshed*24 + a*4 + 2;
+                        chunk->indices[j++] = meshed*24 + a*4 + 3;
+                        chunk->indices[j++] = meshed*24 + a*4 + 0;
+                    }
+                    //printf("%i\n", meshed);
+                    chunk->indiceCount+=36;
+                    meshed++;
+                }
+            }
+        }
+    }
+    //printf("Count: %i\n", count);
+	glGenVertexArrays(1, &(chunk->VAO));
+	glBindVertexArray(chunk->VAO);
+	glGenBuffers(1, &(chunk->VBO));
+    glGenBuffers(1, &(chunk->EBO));
+
+	glBindBuffer(GL_ARRAY_BUFFER, chunk->VBO);
+	glBufferData(GL_ARRAY_BUFFER, chunk->vertices, chunk->mesh, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->indiceCount, chunk->indices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+}
+
+void renderChunkMesh(Chunk* chunk, unsigned int shaderProgram) {
+    prepareCubeRender();
+    glBindTexture(GL_TEXTURE_2D, getBlockTexture(GREEN));
+    glBindVertexArray(chunk->VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, chunk->VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->EBO);
+    
+    mat4 transform;
+    vec3 location = {(float)chunk->x*CHUNKX*2, 1.0f, (float)chunk->z*CHUNKZ*2};
+    glm_mat4_identity(transform);
+	glm_translate(transform, location);
+	setShaderMat4("model", transform, shaderProgram);
+
+    //glDrawArrays(GL_TRIANGLES, 0, chunk->vertices);
+    glDrawElements(GL_TRIANGLES, chunk->indiceCount, GL_UNSIGNED_INT, 0);
+}
 void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frustum) {
     prepareCubeRender();
     vec4 planes[6];
@@ -150,7 +264,7 @@ void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frust
         if (chunk == NULL) {
             return;
         }
-        int blockCount = 0;
+        //int blockCount = 0;
         for (int x = 0; x < CHUNKX; x++) {
             for (int y = 0; y < CHUNKY; y++) {
                 for (int z = 0; z < CHUNKZ; z++) {
@@ -158,7 +272,7 @@ void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frust
                     if (block != AIR) {
                         //if the block is next to an air block it will be rendered
                         bool shouldRender = false;
-                        // width of a cube is 2 idk why
+                        // width of a cube is 2
                         vec3 box[2] = { { 2*(chunk->x*CHUNKX + x),    y * 2,     2*(chunk->z*CHUNKZ + z)}, 
                                         { 2*(chunk->x*CHUNKX + x)+ 2, y * 2 + 2, 2*(chunk->z*CHUNKZ+ z) + 2} };
 
@@ -317,3 +431,27 @@ void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frust
     }
 }
 
+void printArrayFloat(float* array, int width, int size) {
+    int i = 0;
+    //printf("%i %i\n", width, size);
+    for(int x=0; x<size/width; x++) {
+        printf("%i: ", x);
+        for(int y=0; y<width; y++) {
+            printf("%g, ", array[i]);
+            i++;
+        }
+        printf("\n");
+    }
+}
+void printArrayInt(int* array, int width, int size) {
+    int i = 0;
+    //printf("%i %i\n", width, size);
+    for(int x=0; x<size/width; x++) {
+        printf("%i: ", x);
+        for(int y=0; y<width; y++) {
+            printf("%i, ", array[i]);
+            i++;
+        }
+        printf("\n");
+    }
+}
