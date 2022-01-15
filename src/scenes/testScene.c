@@ -98,14 +98,13 @@ static int init() {
 			}
 		}
 	}
-	#define NUM 1;
 	//printf("Preparing chunk\n");
 	//prepareChunkMesh(chunkManager.chunks[1]);
 	//printf("Vertices: %i\n", chunkManager.chunks[1]->vertices);
 	//printArray(chunkManager.chunks[1]->mesh, 5, chunkManager.chunks[1]->vertices * 5);
 	//printArrayInt(chunkManager.chunks[1]->indices, 3, chunkManager.chunks[1]->indiceCount);
-	printf("%i\n", chunkManager.chunks[1]->indiceCount);
-	printf("Preparing camera\n");
+	//printf("%i\n", chunkManager.chunks[1]->indiceCount);
+	//printf("Preparing camera\n");
 	camera = cameraInit();
 	camera.cameraPos[2] = 0.0f;
 	camera.cameraPos[1] = 60.0f;
@@ -172,11 +171,14 @@ static void loop() {
 		vec3 loc = {0.0f, 0.0f, 0.0f};
 		//printf("%i\n", chunkManager.index);
 		
-		
-		for(int i=0; i<90; i++) {
+		//renderChunk(&chunkManager, 400, shaderProgram, shaderMatrix);
+		//return;
+		//glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+		/*for(int i=0; i<100; i++) {
 			renderChunkMesh(chunkManager.chunks[i], shaderProgram);
-		}
-		//renderChunkMesh(chunkManager.chunks[1], shaderProgram);
+		}*/
+		renderChunkMesh(chunkManager.chunks[1], shaderProgram);
 		//renderChunk(&chunkManager, 90, shaderProgram, shaderMatrix);
 		//printf("%f\n", 1.0f/dt);
 

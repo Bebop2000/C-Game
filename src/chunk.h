@@ -6,13 +6,16 @@
 #define CHUNKY 128
 #define CHUNKZ 16
 
-// For data:
-// for each bit: 1=yes 0=no
-// bit1: has been checked if visible
-// bit2: is visible
 typedef struct {
     byte blockID;
-    byte data;
+    byte checked : 1;
+    byte visible : 1;
+    byte topVisible : 1;
+    byte bottomVisible : 1;
+    byte leftVisible : 1;
+    byte rightVisible : 1;
+    byte frontVisible : 1;
+    byte backVisible : 1;
 }Block;
 
 typedef struct {

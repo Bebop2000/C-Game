@@ -3,10 +3,9 @@
 #include "window.h"
 #include "scenes/testScene.h"
 
-
+Scene nextScene;
 void framebufferSizeCallbackM(GLFWwindow* window, int width, int height);
 int main() {
-	Scene nextScene = testScene;
 
 	GLFWwindow* window = makeWindow(960, 540, "beans");
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -29,6 +28,7 @@ int main() {
 		if(nextScene == testScene) {
 			runTestScene(window);
 		}
+		nextScene = menuScene;
 	}
 
 	glfwTerminate();
