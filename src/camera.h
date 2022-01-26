@@ -8,7 +8,7 @@ typedef struct CameraData{
 	vec3 cameraFront;
 	float pitch;
 	float yaw;
-	int useFront;
+	bool useFront;
 }CameraData;
 
 CameraData cameraInit();

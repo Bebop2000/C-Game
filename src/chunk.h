@@ -9,7 +9,7 @@
 typedef struct {
     byte blockID;
     byte checked : 1;
-    byte visible : 1;
+    byte allVisible : 1;
     byte topVisible : 1;
     byte bottomVisible : 1;
     byte leftVisible : 1;
@@ -20,13 +20,13 @@ typedef struct {
 
 typedef struct {
     Block grid[CHUNKX][CHUNKY][CHUNKZ];
-    float* mesh;    //array
-    int* indices;
     int x, z;
+    float* mesh;    //array
+    int* indices;   //array
     int vertices;
-    int blockCount;
-    int visibleBlockCount;
     int indiceCount;
+    int quads;
+    int visibleBlockCount;
     unsigned int VAO, VBO, EBO;
 }Chunk;
 
@@ -38,11 +38,12 @@ typedef struct{
 }ChunkManager;
 
 void generateChunk(ChunkManager* cm, int chunkx, int chunky);
-void prepareChunkMesh(Chunk* chunk);
+void prepareChunkMesh(ChunkManager* cm, int index);
 void renderChunkMesh(Chunk* chunks, unsigned int shaderProgram);
 void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frustum);
 void printArrayFloat(float* array, int width, int size);
 void printArrayInt(int* array, int width, int size);
 void chunkGenInit();
+void checkChunkVisible(ChunkManager* cm, int index);
 
 #endif

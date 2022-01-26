@@ -76,35 +76,37 @@ static int init() {
 		printf("In init(): allocating memory for ChunkManager->grid failed\n");
 		return 0;
 	}
-	printf("Generating starting chunks\n");
-	int index=0;
-	for(int x=0; x<10; x++){
-		for(int y=0; y<10; y++){
-			//printf("ChunkGen\n");
-			//printf("Generating Chunk\n");
+	printf("\tGenerating starting chunks\n");
+	//int chunkIndex = 0;
+	for(int x=0; x<20; x++){
+		for(int y=0; y<20; y++){
+			//printf("Generating Chunk %i %i %i\n", chunkManager.index, x, y);
 			generateChunk(&chunkManager, x, y);
-			//printf("Preparing chunk\n");
-			prepareChunkMesh(chunkManager.chunks[index]);
-			index++;
+			if (chunkManager.chunks[chunkManager.index-1] == NULL) {
+				printf("Error generating chunk %i %i\n", x, y);
+			}
 			if (chunkManager.index == chunkManager.size) {
-				Chunk* tmp = realloc(chunkManager.chunks, (chunkManager.size * sizeof(Chunk*)) + sizeof(Chunk*) * 500);
-				if (tmp == NULL) {
+				chunkManager.chunks = realloc(chunkManager.chunks, (chunkManager.index * sizeof(Chunk*)) + sizeof(Chunk*) * 500);
+				if (chunkManager.chunks == NULL) {
 					printf("Error reallocating %zu bytes of memory for chunkManager.chunks\n", ((chunkManager.size * sizeof(Chunk*)) + sizeof(Chunk*) * 500));
 				}
 				else {
-					chunkManager.chunks = tmp;
 					chunkManager.size += 500;
 				}
 			}
 		}
 	}
+	printf("\tPreparing Meshes\n");
+	for (int i=0; i < 100; i++) {
+		prepareChunkMesh(&chunkManager, i);
+	}
 	//printf("Preparing chunk\n");
 	//prepareChunkMesh(chunkManager.chunks[1]);
 	//printf("Vertices: %i\n", chunkManager.chunks[1]->vertices);
-	//printArray(chunkManager.chunks[1]->mesh, 5, chunkManager.chunks[1]->vertices * 5);
+	//printArrayFloat(chunkManager.chunks[1]->mesh, 5, chunkManager.chunks[1]->vertices * 5);
 	//printArrayInt(chunkManager.chunks[1]->indices, 3, chunkManager.chunks[1]->indiceCount);
 	//printf("%i\n", chunkManager.chunks[1]->indiceCount);
-	//printf("Preparing camera\n");
+	printf("\tPreparing camera\n");
 	camera = cameraInit();
 	camera.cameraPos[2] = 0.0f;
 	camera.cameraPos[1] = 60.0f;
@@ -120,18 +122,17 @@ static int init() {
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glCullFace(GL_FRONT);
-	glFrontFace(GL_CCW);
+	glFrontFace(GL_CW);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 	return 1;
 }
 
 float startTime = 0.0f;
 float endTime = 0.0f;
 float dt = 0.0f;
-float mult = 30.0f;
+float mult = 60.0f;
 float shiftMult = 2.0f;
 float shiftMultCache = 0.0f;
 bool sceneShouldClose;
@@ -143,17 +144,21 @@ float right = 10.0f;
 float bottom = 0.0f;
 float top = 10.0f;
 float near = 0.0f;
-float far = 20.0f;
+float far = 200.0f;
+int activeChunks[100];
+int renderDistance = 10;
 
+int POO;
 static void loop() {
 	printf("Loop start\n");
+	POO = 0;
 	sceneShouldClose = false;
 	glUseProgram(shaderProgram);
 	prepareCubeRender();
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
-		//printf("FPS: %f\n", 1.0f/dt);
+		printf("%f, %f, %f\n", camera.cameraPos[0], camera.cameraPos[1], camera.cameraPos[2]);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -169,18 +174,16 @@ static void loop() {
 		mat4 frustum;
 		glm_frustum(0.0f, 10, 0.0f, 10, near, far, frustum);
 		vec3 loc = {0.0f, 0.0f, 0.0f};
-		//printf("%i\n", chunkManager.index);
-		
-		//renderChunk(&chunkManager, 400, shaderProgram, shaderMatrix);
-		//return;
-		//glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-		/*for(int i=0; i<100; i++) {
+		for(int x = -camera.cameraPos[0]; x < camera.cameraPos[0]; x++) {
+			for(int y = -camera.cameraPos[2]; y < camera.cameraPos[2]; y++) {
+				
+			}
+		}
+		
+		for(int i=0; i<chunkManager.index; i++) {
 			renderChunkMesh(chunkManager.chunks[i], shaderProgram);
-		}*/
-		renderChunkMesh(chunkManager.chunks[1], shaderProgram);
-		//renderChunk(&chunkManager, 90, shaderProgram, shaderMatrix);
-		//printf("%f\n", 1.0f/dt);
+		}
 
 		processInput();
 		glfwSwapBuffers(window);
@@ -216,8 +219,12 @@ static void processInput() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	if(isKeyPressed(GLFW_KEY_T)) {
-		camera.pitch = 0.0f;
-		camera.yaw = 0.0f;
+		camera.cameraPos[0] += 1.0f;
+		glfwWaitEvents();
+	}
+	if(isKeyPressed(GLFW_KEY_Y)) {
+		camera.cameraPos[2] += 1.0f;
+		glfwWaitEvents();
 	}
 	if(isKeyPressed(GLFW_KEY_W)) {
 		moveCameraForwards(&camera, dt * mult);
@@ -232,13 +239,14 @@ static void processInput() {
 		strafeCameraRight(&camera, dt * mult);
 	}
 	if(isKeyPressed(GLFW_KEY_UP)) {
-		far += 1;
+		POO += 1;
+		printf("%i\n", POO);
 	}
 	if(isKeyPressed(GLFW_KEY_DOWN)) {
 		far -= 1;
 	}
 	if(isKeyPressed(GLFW_KEY_SPACE)) {
-		camera.cameraPos[1] += mult / 2.0f;
+		camera.cameraPos[1] += 50.0f * dt;
 	}
 	if(scrollYOffset) {
 		fov += (float)scrollYOffset;
