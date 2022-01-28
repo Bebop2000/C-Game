@@ -72,40 +72,30 @@ static int init() {
 	chunkManager.chunks = calloc(500, sizeof(Chunk*));
 	chunkManager.size = 500;
 	chunkManager.index = 0;
-	if (chunkManager.chunks == NULL) {
-		printf("In init(): allocating memory for ChunkManager->grid failed\n");
-		return 0;
-	}
 	printf("\tGenerating starting chunks\n");
 	//int chunkIndex = 0;
-	for(int x=0; x<20; x++){
-		for(int y=0; y<20; y++){
+	for(int x=-10; x<1; x++){
+		for(int y=-10; y<1; y++){
 			//printf("Generating Chunk %i %i %i\n", chunkManager.index, x, y);
 			generateChunk(&chunkManager, x, y);
 			if (chunkManager.chunks[chunkManager.index-1] == NULL) {
 				printf("Error generating chunk %i %i\n", x, y);
 			}
-			if (chunkManager.index == chunkManager.size) {
-				chunkManager.chunks = realloc(chunkManager.chunks, (chunkManager.index * sizeof(Chunk*)) + sizeof(Chunk*) * 500);
-				if (chunkManager.chunks == NULL) {
-					printf("Error reallocating %zu bytes of memory for chunkManager.chunks\n", ((chunkManager.size * sizeof(Chunk*)) + sizeof(Chunk*) * 500));
-				}
-				else {
-					chunkManager.size += 500;
-				}
-			}
 		}
 	}
 	printf("\tPreparing Meshes\n");
-	for (int i=0; i < 100; i++) {
-		prepareChunkMesh(&chunkManager, i);
+	int size = chunkManager.index;
+	for (int i=0; i < size; i++) {
+		//printf("Getting chunk\n");
+		Chunk* chunk = chunkManager.chunks[i];
+		printf("Creating Buffers\n");
+		//createChunkBuffers(chunk);
+		printf("Checking visible\n");
+		//checkChunkVisible(&chunkManager, chunk);
+		printf("Preparing Mesh %i %i\n", chunk->x, chunk->z);
+		//prepareChunkMesh(chunk);
+		//TEST(&chunkManager, i);
 	}
-	//printf("Preparing chunk\n");
-	//prepareChunkMesh(chunkManager.chunks[1]);
-	//printf("Vertices: %i\n", chunkManager.chunks[1]->vertices);
-	//printArrayFloat(chunkManager.chunks[1]->mesh, 5, chunkManager.chunks[1]->vertices * 5);
-	//printArrayInt(chunkManager.chunks[1]->indices, 3, chunkManager.chunks[1]->indiceCount);
-	//printf("%i\n", chunkManager.chunks[1]->indiceCount);
 	printf("\tPreparing camera\n");
 	camera = cameraInit();
 	camera.cameraPos[2] = 0.0f;
@@ -145,21 +135,20 @@ float bottom = 0.0f;
 float top = 10.0f;
 float near = 0.0f;
 float far = 200.0f;
-int activeChunks[100];
+Chunk* activeChunks[500];
 int renderDistance = 10;
 
 int POO;
 static void loop() {
 	printf("Loop start\n");
-	POO = 0;
 	sceneShouldClose = false;
 	glUseProgram(shaderProgram);
 	prepareCubeRender();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
-		printf("%f, %f, %f\n", camera.cameraPos[0], camera.cameraPos[1], camera.cameraPos[2]);
-
+		//printf("%f, %f, %f\n", camera.cameraPos[0], camera.cameraPos[1], camera.cameraPos[2]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		updateCameraFront(&camera);
@@ -175,13 +164,56 @@ static void loop() {
 		glm_frustum(0.0f, 10, 0.0f, 10, near, far, frustum);
 		vec3 loc = {0.0f, 0.0f, 0.0f};
 
-		for(int x = -camera.cameraPos[0]; x < camera.cameraPos[0]; x++) {
-			for(int y = -camera.cameraPos[2]; y < camera.cameraPos[2]; y++) {
-				
+		float playerx = camera.cameraPos[0];
+		float playerz = camera.cameraPos[2];
+		int currentChunkx = playerx / (float)CHUNKX / 2.0f;
+		int currentChunkz = playerz / (float)CHUNKZ / 2.0f;
+		//printf("%i %i\n", currentChunkx, currentChunkz);
+		//printf("%i, %i\n", currentChunkx, currentChunkz);
+		/*for (int w=0; w<100; w++) {
+			renderChunkMesh(chunkManager.chunks[w], shaderProgram);
+		}*/
+
+/*
+		int i = 0;
+		for(int x = currentChunkx-renderDistance; x < currentChunkx+renderDistance; x++) {
+			for(int z = currentChunkz-renderDistance; z < currentChunkz+renderDistance; z++) {
+				printf("%i %i\n", x, z);
+				printf("Getting chunk\n");
+				Chunk* temp = getChunk(&chunkManager, x, z);
+				if (temp != NULL) {
+					if(temp->needsBuffers) {
+						printf("Creating buffers\n");
+						createChunkBuffers(temp);
+						temp->needsBuffers = 0;
+					}
+					if(temp->needsPreparing) {
+						printf("Checking Visibility\n");
+						checkChunkVisible(&chunkManager, temp);
+						printf("Preparing Mesh\n");
+						prepareChunkMesh(temp);
+						temp->needsPreparing = 0;
+					}
+					printf("Allocating chunk %i\n", i);
+					activeChunks[i++] = temp;
+				}
+				else {
+					printf("NULL Chunk Error\n");
+				}
 			}
 		}
+		for(int i=0; i<100; i++) {
+			if(i != NULL) {
+				renderChunkMesh(activeChunks[i], shaderProgram);
+			}
+		}
+
+		for(int i=0; i<500; i++) {
+			activeChunks[i] = NULL;
+		}*/
+
 		
-		for(int i=0; i<chunkManager.index; i++) {
+		for(int i=0; i<100; i++) {
 			renderChunkMesh(chunkManager.chunks[i], shaderProgram);
 		}
 
@@ -219,8 +251,8 @@ static void processInput() {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	if(isKeyPressed(GLFW_KEY_T)) {
-		camera.cameraPos[0] += 1.0f;
 		glfwWaitEvents();
+		camera.cameraPos[0] += 1.0f;
 	}
 	if(isKeyPressed(GLFW_KEY_Y)) {
 		camera.cameraPos[2] += 1.0f;
@@ -240,7 +272,7 @@ static void processInput() {
 	}
 	if(isKeyPressed(GLFW_KEY_UP)) {
 		POO += 1;
-		printf("%i\n", POO);
+		//printf("%i\n", POO);
 	}
 	if(isKeyPressed(GLFW_KEY_DOWN)) {
 		far -= 1;

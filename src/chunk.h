@@ -18,16 +18,21 @@ typedef struct {
     byte backVisible : 1;
 }Block;
 
+
 typedef struct {
     Block grid[CHUNKX][CHUNKY][CHUNKZ];
     int x, z;
-    float* mesh;    //array
-    int* indices;   //array
-    int vertices;
-    int indiceCount;
+    int index;
+    struct Mesh{
+        float* vertices;
+        int verticeCount;
+        int* indices;
+        int indiceCount;
+        unsigned int VAO, VBO, EBO;
+    }mesh;
+    bool needsPreparing : 1;
+    bool needsBuffers : 1;
     int quads;
-    int visibleBlockCount;
-    unsigned int VAO, VBO, EBO;
 }Chunk;
 
 typedef struct{
@@ -37,13 +42,16 @@ typedef struct{
     int size;
 }ChunkManager;
 
+void chunkGenInit();
 void generateChunk(ChunkManager* cm, int chunkx, int chunky);
-void prepareChunkMesh(ChunkManager* cm, int index);
+Chunk* getChunk(ChunkManager* cm, int x, int z);
+void checkChunkVisible(ChunkManager* cm, Chunk* chunk);
+void createChunkBuffers(Chunk* chunk);
+void prepareChunkMesh(Chunk* chunk);
 void renderChunkMesh(Chunk* chunks, unsigned int shaderProgram);
-void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frustum);
+void TEST(ChunkManager* cm, int index);
+
 void printArrayFloat(float* array, int width, int size);
 void printArrayInt(int* array, int width, int size);
-void chunkGenInit();
-void checkChunkVisible(ChunkManager* cm, int index);
 
 #endif

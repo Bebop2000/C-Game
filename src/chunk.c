@@ -7,7 +7,7 @@
 #include "../vendor/cglm/box.h"
 #include "../vendor/cglm/frustum.h"
 
-void checkChunkVisible(ChunkManager* cm, int i);
+void checkChunkVisible(ChunkManager* cm, Chunk* chunk);
 Chunk* getChunk(ChunkManager* cm, int x, int z);
 
 
@@ -31,13 +31,16 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
 
     if (cm->index == cm->size) {
 		cm->chunks = realloc(cm->chunks, (cm->index * sizeof(Chunk*)) + sizeof(Chunk*) * 500);
+        printf("Allocating more chunk memory\n");
 		if (cm->chunks == NULL) {
 			printf("Error reallocating %zu bytes of memory for chunkManager.chunks\n", ((cm->size * sizeof(Chunk*)) + sizeof(Chunk*) * 500));				}				else {
 			cm->size += 500;
 		}
 	}
     
+    //printf("Allocating Memory\n");
     Chunk* chunk = malloc(sizeof(Chunk));
+    //printf("N\n");
     if (chunk == NULL) {
         printf("\tChunk %i, %i, failed to allocate memory\n", chunkx, chunkz);
         return;
@@ -46,13 +49,16 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
         //printf("Memory assigned\n");
         chunk->x = chunkx;
         chunk->z = chunkz;
-        chunk->indiceCount = 0;
-        chunk->visibleBlockCount = 0;
-        chunk->vertices = 0;
+        chunk->index = cm->index;
         chunk->quads = 0;
-        chunk->mesh = NULL;
-        chunk->indices = NULL;
+        chunk->needsPreparing = 1;
+        chunk->needsBuffers = 1;
+        chunk->mesh.indiceCount = 0;
+        chunk->mesh.verticeCount = 0;
+        chunk->mesh.vertices = NULL;
+        chunk->mesh.indices = NULL;
 
+        //printf("Setting defaults\n");
         for(int x=0; x<CHUNKX; x++) {
             for(int y=0; y<CHUNKY; y++) {
                 for(int z=0; z<CHUNKZ; z++) {
@@ -65,9 +71,13 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
                     chunk->grid[x][y][z].rightVisible = 0;
                     chunk->grid[x][y][z].frontVisible = 0;
                     chunk->grid[x][y][z].backVisible = 0;
+                    if(y == 1) {
+                        chunk->grid[x][y][z].blockID = GREEN;
+                    }
                 }
             }
         }
+        //printf("Generating Terrain\n");
         for(int x=0; x < CHUNKX; x++) {
             for(int z=0; z< CHUNKZ; z++) {
                 int height = (int)(perlin2d(x+chunkx*CHUNKX, z+chunkz*CHUNKZ, 0.005, 10) * 100);
@@ -91,37 +101,6 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
                 }
             }
         }
-        
-        /*
-        for(int x=0; x < CHUNKX; x++) {
-            for(int y=0; y<CHUNKY; y++) {
-                for(int z=0; z<CHUNKZ; z++) {
-                    chunk->grid[x][y][z].checked = 0;
-                    chunk->grid[x][y][z].topVisible = 0;
-                    chunk->grid[x][y][z].bottomVisible = 0;
-                    chunk->grid[x][y][z].leftVisible = 0;
-                    chunk->grid[x][y][z].rightVisible = 0;
-                    chunk->grid[x][y][z].frontVisible = 0;
-                    chunk->grid[x][y][z].backVisible = 0;
-                    int height = (int)(perlin2d(x+chunkx*CHUNKX, z+chunkz*CHUNKZ, 0.005, 10) * 100);
-                    //printf("%i\n", height);
-                    if(height == y){
-                        chunk->grid[x][y][z].blockID = GREEN;
-                    }
-                    else {
-                        chunk->grid[x][y][z].blockID = AIR;
-                    }
-                    float value = pnoise3((float)(x+chunk->x*CHUNKX)/10.0f, (float)y / 10.0f, (float)(z+chunk->z*CHUNKZ) / 10.0f, 500, 500, 500);
-                    //printf("%f\n", value);
-                    if (value > 0.3) {
-                        chunk->grid[x][y][z].blockID = GREEN;
-                    }
-                    else {
-                        chunk->grid[x][y][z].blockID = AIR;
-                    }
-                }
-            }
-        }*/
         cm->chunks[cm->index++] = chunk;
 
     }
@@ -139,15 +118,15 @@ Chunk* getChunk(ChunkManager* cm, int x, int z) {
     //printf("\tChunk %i %i not found\n", x, z);
     //printf("\tGenerating chunk %i %i\n", x, z);
     generateChunk(cm, x, z);
+    //printf("P2\n");
     if(cm->chunks[cm->index - 1] == NULL) {
         printf("Error getting chunk %i %i\n", x, z);
     }
     return cm->chunks[cm->index-1];
 }
 
-void checkChunkVisible(ChunkManager* cm, int i) {
+void checkChunkVisible(ChunkManager* cm, Chunk* chunk) {
     //printf("checkChunkVisible() chunk: %i\n", i);
-    Chunk* chunk = cm->chunks[i];
     if (chunk == NULL) {
         printf("ERROR: Null chunk pointer\n");
     }
@@ -187,13 +166,13 @@ void checkChunkVisible(ChunkManager* cm, int i) {
                         if (leftChunk->grid[CHUNKX-1][y][z].blockID == AIR) {
                             chunk->grid[x][y][z].leftVisible = 1;
                             chunk->quads++;
-                            shouldRender = true;                            }
+                        }
                     }
                     if (x == CHUNKX - 1) {
                         //printf("X = CHNUKX - 1\n");
                         if (rightChunk->grid[0][y][z].blockID == AIR) {
                             chunk->grid[x][y][z].rightVisible = 1;
-                            chunk->quads++;                                shouldRender = true;
+                            chunk->quads++;
                         }
                     }
                     if (x !=0) {
@@ -270,6 +249,13 @@ void checkChunkVisible(ChunkManager* cm, int i) {
     }
     //printf("Visible in chunk %i %i: %i\n", chunk->x, chunk->z, visibleCount);
 }
+
+void createChunkBuffers(Chunk* chunk) {
+    glGenVertexArrays(1, &(chunk->mesh.VAO));
+	glGenBuffers(1, &(chunk->mesh.VBO));
+    glGenBuffers(1, &(chunk->mesh.EBO));
+}
+
 const float frontFace[] = {
         -1.0f, -1.0f, -1.0f, 0.5f, 0.5f,	//bottom left		0
 		 1.0f, -1.0f, -1.0f, 1.0f, 0.5f,	//bottom right		1
@@ -307,17 +293,15 @@ const float bottomFace[] = {
 		-1.0f, -1.0f,  1.0f, 0.5f, 0.5f,	
 };
 int POO;
-void prepareChunkMesh(ChunkManager* cm, int index) {
+void prepareChunkMesh(Chunk* chunk) {
     //printf("prepareChunkMesh()\n");
-    Chunk* chunk = cm->chunks[index];
-    checkChunkVisible(cm, index);
     //printf("In PrepareChunkMesh: allocating memory\n");
-    chunk->mesh = (float*)calloc(chunk->quads*4*5, sizeof(float));
-    chunk->indices = (int*)calloc(chunk->quads*6, sizeof(int));
-    if (chunk->mesh == NULL) {
+    chunk->mesh.vertices = (float*)calloc(chunk->quads*4*5, sizeof(float));
+    chunk->mesh.indices = (int*)calloc(chunk->quads*6, sizeof(int));
+    if (chunk->mesh.vertices == NULL) {
         printf("ERROR calloc to chunk->mesh\n");
     }
-    if (chunk->indices == NULL) {
+    if (chunk->mesh.indices == NULL) {
         printf("ERROR calloc to chunk->indices\n");
     }
     //printf("Quads: %i\n", chunk->quads);
@@ -339,110 +323,110 @@ void prepareChunkMesh(ChunkManager* cm, int index) {
                 if (block.blockID != AIR) {
                     if (block.frontVisible || block.allVisible) {
                         for (int a = 0; a < 4; a++) {
-                            chunk->mesh[i++] = frontFace[a*5 + 0] + x * 2;
-                            chunk->mesh[i++] = frontFace[a*5 + 1] + y * 2;
-                            chunk->mesh[i++] = frontFace[a*5 + 2] + z * 2;
-                            chunk->mesh[i++] = frontFace[a*5 + 3];
-                            chunk->mesh[i++] = frontFace[a*5 + 4];
-                            chunk->vertices+=num2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 3];
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 4];
+                            chunk->mesh.verticeCount+=num2;
                         }
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indices[j++] = quads * 4 + 1;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 3;
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indiceCount += num;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
                         quads++;
                     }
                     if (block.backVisible || block.allVisible) {
                         for (int a = 0; a < 4; a++) {
-                            chunk->mesh[i++] = backFace[a * 5 + 0] + x * 2;
-                            chunk->mesh[i++] = backFace[a * 5 + 1] + y * 2;
-                            chunk->mesh[i++] = backFace[a * 5 + 2] + z * 2;
-                            chunk->mesh[i++] = backFace[a * 5 + 3];
-                            chunk->mesh[i++] = backFace[a * 5 + 4];
-                            chunk->vertices+=num2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
                         }
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indices[j++] = quads * 4 + 1;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 3;
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indiceCount += num;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
                         quads++;
                     }
                     if (block.leftVisible || block.allVisible) {
                         for (int a = 0; a < 4; a++) {
-                            chunk->mesh[i++] = leftFace[a * 5 + 0] + x * 2;
-                            chunk->mesh[i++] = leftFace[a * 5 + 1] + y * 2;
-                            chunk->mesh[i++] = leftFace[a * 5 + 2] + z * 2;
-                            chunk->mesh[i++] = leftFace[a * 5 + 3];
-                            chunk->mesh[i++] = leftFace[a * 5 + 4];
-                            chunk->vertices+=num2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
                         }
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indices[j++] = quads * 4 + 1;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 3;
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indiceCount += num;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
                         quads++;
                     }
                     if (block.rightVisible || block.allVisible) {
                         for (int a = 0; a < 4; a++) {
-                            chunk->mesh[i++] = rightFace[a * 5 + 0] + x * 2;
-                            chunk->mesh[i++] = rightFace[a * 5 + 1] + y * 2;
-                            chunk->mesh[i++] = rightFace[a * 5 + 2] + z * 2;
-                            chunk->mesh[i++] = rightFace[a * 5 + 3];
-                            chunk->mesh[i++] = rightFace[a * 5 + 4];
-                            chunk->vertices+=num2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
                         }
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indices[j++] = quads * 4 + 1;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 3;
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indiceCount += num;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
                         quads++;
                     }
                     if (block.topVisible || block.allVisible) {
                         for (int a = 0; a < 4; a++) {
-                            chunk->mesh[i++] = topFace[a * 5 + 0] + x * 2;
-                            chunk->mesh[i++] = topFace[a * 5 + 1] + y * 2;
-                            chunk->mesh[i++] = topFace[a * 5 + 2] + z * 2;
-                            chunk->mesh[i++] = topFace[a * 5 + 3];
-                            chunk->mesh[i++] = topFace[a * 5 + 4];
-                            chunk->vertices+=num2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
                         }
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indices[j++] = quads * 4 + 1;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 3;
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indiceCount += num;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
                         quads++;
                     }
                     if (block.bottomVisible || block.allVisible) {
                         for (int a = 0; a < 4; a++) {
-                            chunk->mesh[i++] = bottomFace[a * 5 + 0] + x * 2;
-                            chunk->mesh[i++] = bottomFace[a * 5 + 1] + y * 2;
-                            chunk->mesh[i++] = bottomFace[a * 5 + 2] + z * 2;
-                            chunk->mesh[i++] = bottomFace[a * 5 + 3];
-                            chunk->mesh[i++] = bottomFace[a * 5 + 4];
-                            chunk->vertices+=num2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
                         }
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indices[j++] = quads * 4 + 1;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 2;
-                        chunk->indices[j++] = quads * 4 + 3;
-                        chunk->indices[j++] = quads * 4 + 0;
-                        chunk->indiceCount += num;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
                         quads++;
                     }
                 }
@@ -451,16 +435,179 @@ void prepareChunkMesh(ChunkManager* cm, int index) {
     }
     //printf("In prepareChunkMesh(): Finalizing data\n");
     //printf("Count: %i\n", count);
-	glGenVertexArrays(1, &(chunk->VAO));
-	glBindVertexArray(chunk->VAO);
-	glGenBuffers(1, &(chunk->VBO));
-    glGenBuffers(1, &(chunk->EBO));
+	glBindVertexArray(chunk->mesh.VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, chunk->VBO);
-	glBufferData(GL_ARRAY_BUFFER, chunk->vertices*32, chunk->mesh, GL_STATIC_DRAW);
+    //printf("VBO\n");
+	glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.VBO);
+	glBufferData(GL_ARRAY_BUFFER, chunk->mesh.verticeCount*32, chunk->mesh.vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->indiceCount*32, chunk->indices, GL_STATIC_DRAW);
+    //printf("EBO\n");
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indiceCount*32, chunk->mesh.indices, GL_STATIC_DRAW);
+
+    //printf("Attrib1\n");
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+    //printf("Attrib2\n");
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+}
+
+void TEST(ChunkManager* cm, int index) {
+    printf("prepareChunkMesh()\n");
+    Chunk* chunk = cm->chunks[index];
+    checkChunkVisible(cm, chunk);
+    printf("In PrepareChunkMesh: allocating memory\n");
+    chunk->mesh.vertices = (float*)calloc(chunk->quads*4*5, sizeof(float));
+    chunk->mesh.indices = (int*)calloc(chunk->quads*6, sizeof(int));
+    if (chunk->mesh.vertices == NULL) {
+        printf("ERROR calloc to chunk->mesh\n");
+    }
+    if (chunk->mesh.indices == NULL) {
+        printf("ERROR calloc to chunk->indices\n");
+    }
+    //printf("Quads: %i\n", chunk->quads);
+    printf("In PrepareChunkMesh: setting mesh\n");
+    int i = 0;
+    int j = 0;
+    int quads = 0;
+    int num = 6;
+    int num2 = 1;
+    float atlasWidth = 3;
+    float atlasHeight = 3;
+    float RED = 1;
+    float GREEN = 2;
+    float BLUE = 3;
+    for(int x = 0; x < CHUNKX; x++) {
+        for (int y = 0; y < CHUNKY; y++) {
+            for (int z = 0; z < CHUNKZ; z++) {
+                Block block = chunk->grid[x][y][z];
+                if (block.blockID != AIR) {
+                    if (block.frontVisible || block.allVisible) {
+                        for (int a = 0; a < 4; a++) {
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 3];
+                            chunk->mesh.vertices[i++] = frontFace[a*5 + 4];
+                            chunk->mesh.verticeCount+=num2;
+                        }
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
+                        quads++;
+                    }
+                    if (block.backVisible || block.allVisible) {
+                        for (int a = 0; a < 4; a++) {
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = backFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
+                        }
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
+                        quads++;
+                    }
+                    if (block.leftVisible || block.allVisible) {
+                        for (int a = 0; a < 4; a++) {
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = leftFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
+                        }
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
+                        quads++;
+                    }
+                    if (block.rightVisible || block.allVisible) {
+                        for (int a = 0; a < 4; a++) {
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = rightFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
+                        }
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
+                        quads++;
+                    }
+                    if (block.topVisible || block.allVisible) {
+                        for (int a = 0; a < 4; a++) {
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = topFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
+                        }
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
+                        quads++;
+                    }
+                    if (block.bottomVisible || block.allVisible) {
+                        for (int a = 0; a < 4; a++) {
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 0] + x * 2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 1] + y * 2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 2] + z * 2;
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 3];
+                            chunk->mesh.vertices[i++] = bottomFace[a * 5 + 4];
+                            chunk->mesh.verticeCount+=num2;
+                        }
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indices[j++] = quads * 4 + 1;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 2;
+                        chunk->mesh.indices[j++] = quads * 4 + 3;
+                        chunk->mesh.indices[j++] = quads * 4 + 0;
+                        chunk->mesh.indiceCount += num;
+                        quads++;
+                    }
+                }
+            }
+        }
+    }
+    printf("In prepareChunkMesh(): Finalizing data\n");
+    //printf("Count: %i\n", count);
+	glGenVertexArrays(1, &(chunk->mesh.VAO));
+	glBindVertexArray(chunk->mesh.VAO);
+	glGenBuffers(1, &(chunk->mesh.VBO));
+    glGenBuffers(1, &(chunk->mesh.EBO));
+
+	glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.VBO);
+	glBufferData(GL_ARRAY_BUFFER, chunk->mesh.verticeCount*32, chunk->mesh.vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.indiceCount*32, chunk->mesh.indices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -469,12 +616,13 @@ void prepareChunkMesh(ChunkManager* cm, int index) {
 	glEnableVertexAttribArray(1);
 }
 
+
 void renderChunkMesh(Chunk* chunk, unsigned int shaderProgram) {
     //prepareCubeRender();
-    glBindTexture(GL_TEXTURE_2D, getBlockTexture(BAT));
-    glBindVertexArray(chunk->VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, chunk->VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->EBO);
+    glBindTexture(GL_TEXTURE_2D, getBlockTexture(GREEN));
+    glBindVertexArray(chunk->mesh.VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, chunk->mesh.VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->mesh.EBO);
     
     mat4 transform;
     vec3 location = {(float)chunk->x*CHUNKX*2, 1.0f, (float)chunk->z*CHUNKZ*2};
@@ -482,195 +630,11 @@ void renderChunkMesh(Chunk* chunk, unsigned int shaderProgram) {
 	glm_translate(transform, location);
 	setShaderMat4("model", transform, shaderProgram);
 
-    //glDrawArrays(GL_TRIANGLES, 0, chunk->vertices);
+    //glDrawArrays(GL_TRIANGLES, 0, chunk->mesh.verticeCount);
     //printf("%i\n", chunk->indiceCount);
-    glDrawElements(GL_TRIANGLES, chunk->indiceCount, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, chunk->mesh.indiceCount, GL_UNSIGNED_INT, 0);
 }
 
-void renderChunk(ChunkManager* cm, int i, unsigned int shaderProgram, mat4 frustum) {
-    prepareCubeRender();
-    vec4 planes[6];
-    glm_frustum_planes(frustum, planes);
-    for (int c = 0; c < i; c++) {
-        Chunk* chunk = cm->chunks[c];
-        if (chunk == NULL) {
-            return;
-        }
-        //int blockCount = 0;
-        for (int x = 0; x < CHUNKX; x++) {
-            for (int y = 0; y < CHUNKY; y++) {
-                for (int z = 0; z < CHUNKZ; z++) {
-                    char block = chunk->grid[x][y][z].blockID;
-                    if (block != AIR) {
-                        //if the block is next to an air block it will be rendered
-                        bool shouldRender = false;
-                        // width of a cube is 2
-                        vec3 box[2] = { { 2*(chunk->x*CHUNKX + x),    y * 2,     2*(chunk->z*CHUNKZ + z)}, 
-                                        { 2*(chunk->x*CHUNKX + x)+ 2, y * 2 + 2, 2*(chunk->z*CHUNKZ+ z) + 2} };
-
-                        if (chunk->grid[x][y][z].checked) {    //if the block's neighbors have been checked before
-                            //printf("checked\n");
-                            if (chunk->grid[x][y][z].allVisible) {     //if the block is allVisible
-                                if (glm_aabb_frustum(box, planes)) {
-                                    shouldRender = true;
-                                }
-                            }
-                        }
-                        else {      //check the block's neighbors
-                            if (!glm_aabb_frustum(box, planes)) {
-                                continue;
-                            }
-                            if (z != 0) {
-                                if (chunk->grid[x][y][z - 1].blockID == AIR) {
-                                    shouldRender = true;
-                                }
-                            }
-                            if (z != CHUNKZ - 1) {
-                                if (chunk->grid[x][y][z + 1].blockID == AIR) {
-                                    shouldRender = true;
-                                }
-                            }
-                            if (x != 0) {
-                                if (chunk->grid[x - 1][y][z].blockID == AIR) {
-                                    shouldRender = true;
-                                }
-                            }
-                            if (x != CHUNKX - 1) {
-                                if (chunk->grid[x + 1][y][z].blockID == AIR) {
-                                    shouldRender = true;
-                                }
-                            }
-                            if (y != 0) {
-                                if (chunk->grid[x][y - 1][z].blockID == AIR) {
-                                    shouldRender = true;
-                                }
-                            }
-                            if (y != CHUNKY - 1) {
-                                if (chunk->grid[x][y + 1][z].blockID == AIR) {
-                                    shouldRender = true;
-                                }
-                            }
-
-                            //
-                            if (x == 0) {
-                                shouldRender = true;
-                                Chunk* nextChunk = NULL;
-                                for (int i = 0; i < cm->size; i++) {
-                                    if (cm->chunks[i] != NULL) {
-                                        //printf("%i, %i\n", cm->chunks[i]->x, cm->chunks[i]->z);
-                                        //printf("%i, %i\n", chunk->x, chunk->z);
-                                        if (cm->chunks[i]->x == (chunk->x) - 1 && cm->chunks[i]->z == chunk->z) {
-                                            //printf("testzn");
-                                            nextChunk = cm->chunks[i];
-                                        }
-                                    }
-                                }
-                                if (nextChunk == NULL) {
-                                    generateChunk(cm, chunk->x - 1, chunk->z);
-                                }
-                                else {
-                                    if (nextChunk->grid[CHUNKX - 1][y][z].blockID == AIR) {
-                                        shouldRender = true;
-                                    }
-                                }
-                            }
-
-                            if (x == CHUNKX-1) {
-                                shouldRender = true;
-                                Chunk* nextChunk = NULL;
-                                for (int i = 0; i < cm->size; i++) {
-                                    if (cm->chunks[i] != NULL) {
-                                        //printf("%i, %i\n", cm->chunks[i]->x, cm->chunks[i]->z);
-                                        //printf("%i, %i\n", chunk->x, chunk->z);
-                                        if (cm->chunks[i]->x == chunk->x + 1 && cm->chunks[i]->z == chunk->z) {
-                                            //printf("testzn");
-                                            nextChunk = cm->chunks[i];
-                                        }
-                                    }
-                                }
-                                if (nextChunk == NULL) {
-                                    generateChunk(cm, chunk->x + 1, chunk->z);
-                                }
-                                else {
-                                    if (nextChunk->grid[0][y][z].blockID == AIR) {
-                                        shouldRender = true;
-                                    }
-                                }
-                            }
-
-                            if (y == CHUNKY || 0) {
-                                shouldRender = true;
-                            }
-                            //
-                            if (z == 0) {
-                                shouldRender = true;
-                                Chunk* nextChunk = NULL;
-                                for (int i = 0; i < cm->size; i++) {
-                                    if (cm->chunks[i] != NULL) {
-                                        //printf("%i, %i\n", cm->chunks[i]->x, cm->chunks[i]->z);
-                                        //printf("%i, %i\n", chunk->x, chunk->z);
-                                        if (cm->chunks[i]->x == (chunk->x) && cm->chunks[i]->z == chunk->z - 1) {
-                                            //printf("testzn");
-                                            nextChunk = cm->chunks[i];
-                                        }
-                                    }
-                                }
-                                if (nextChunk == NULL) {
-                                    generateChunk(cm, chunk->x, chunk->z - 1);
-                                }
-                                else {
-                                    if (nextChunk->grid[x][y][CHUNKZ - 1].blockID == AIR) {
-                                        shouldRender = true;
-                                    }
-                                }
-                            }
-
-                            if (z == CHUNKZ - 1) {
-                                shouldRender = true;
-                                Chunk* nextChunk = NULL;
-                                for (int i = 0; i < cm->size; i++) {
-                                    if (cm->chunks[i] != NULL) {
-                                        //printf("%i, %i\n", cm->chunks[i]->x, cm->chunks[i]->z);
-                                        //printf("%i, %i\n", chunk->x, chunk->z);
-                                        if (cm->chunks[i]->x == chunk->x && cm->chunks[i]->z == chunk->z + 1) {
-                                            //printf("testzn");
-                                            nextChunk = cm->chunks[i];
-                                        }
-                                    }
-                                }
-                                if (nextChunk == NULL) {
-                                    generateChunk(cm, chunk->x, chunk->z + 1);
-                                }
-                                else {
-                                    if (nextChunk->grid[x][y][0].blockID == AIR) {
-                                        shouldRender = true;
-                                    }
-                                }
-                            }
-
-
-
-                            chunk->grid[x][y][z].checked = 1;
-                            if (shouldRender) {
-                                chunk->grid[x][y][z].allVisible = 1;           // sets bit2 to 1
-                            }
-                            else {
-                                chunk->grid[x][y][z].allVisible = 0;  // sets bit2 to 0
-                            }
-                        }
-                        if (shouldRender) {
-                            vec3 loc = { (chunk->x * CHUNKX * 2 + 2 * x),
-                                         (2 * y),
-                                         (chunk->z * CHUNKZ * 2 + 2 * z) };
-                            renderBlock(block, loc, 1.0f, shaderProgram);
-                        }
-                    }
-                }
-            }
-        }
-        //printf("%i\n", blockCount);
-    }
-}
 
 void printArrayFloat(float* array, int width, int size) {
     int i = 0;
