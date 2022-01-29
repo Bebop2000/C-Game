@@ -74,8 +74,8 @@ static int init() {
 	chunkManager.index = 0;
 	printf("\tGenerating starting chunks\n");
 	//int chunkIndex = 0;
-	for(int x=-10; x<1; x++){
-		for(int y=-10; y<1; y++){
+	for(int x=-20; x<1; x++){
+		for(int y=-20; y<1; y++){
 			//printf("Generating Chunk %i %i %i\n", chunkManager.index, x, y);
 			generateChunk(&chunkManager, x, y);
 			if (chunkManager.chunks[chunkManager.index-1] == NULL) {
@@ -89,11 +89,11 @@ static int init() {
 		//printf("Getting chunk\n");
 		Chunk* chunk = chunkManager.chunks[i];
 		printf("Creating Buffers\n");
-		//createChunkBuffers(chunk);
+		createChunkBuffers(chunk);
 		printf("Checking visible\n");
-		//checkChunkVisible(&chunkManager, chunk);
+		checkChunkVisible(&chunkManager, chunk);
 		printf("Preparing Mesh %i %i\n", chunk->x, chunk->z);
-		//prepareChunkMesh(chunk);
+		prepareChunkMesh(chunk);
 		//TEST(&chunkManager, i);
 	}
 	printf("\tPreparing camera\n");
