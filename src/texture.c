@@ -15,6 +15,7 @@ void loadTextureFromFile(Texture* texture, const char* file, int channels) {
 	unsigned char* data = stbi_load(file, &width, &height, &nrChannels, STBI_rgb_alpha);
 	if(!data) {
 		printf("Error loading texture %s\n", file);
+		stbi_image_free(data);
 	}
 	else{
 		texture->width = width;
@@ -27,8 +28,7 @@ void loadTextureFromFile(Texture* texture, const char* file, int channels) {
 		if(channels == 3) {
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		}
-		glGenerateMipmap(GL_TEXTURE_2D);
+		//glGenerateMipmap(GL_TEXTURE_2D);
 		stbi_image_free(data);
 	}
 }
-

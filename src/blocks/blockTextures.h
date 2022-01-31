@@ -18,5 +18,6 @@ enum position{
 };
 
 struct uvCoord getTextureCoord(enum position pos, BlockID block);
+void cleanupTextures();
 
 #endif

@@ -70,13 +70,14 @@ static int init() {
 	}
 
 	chunkManager.chunks = calloc(500, sizeof(Chunk*));
+	printf("%p\n", chunkManager.chunks);
 	chunkManager.size = 500;
 	chunkManager.index = 0;
 	printf("\tGenerating starting chunks\n");
-	//int chunkIndex = 0;
-	for(int x=-20; x<1; x++){
-		for(int y=-20; y<1; y++){
-			//printf("Generating Chunk %i %i %i\n", chunkManager.index, x, y);
+	for(int x=0; x<20; x++){
+		for(int y=0; y<20; y++){
+			printf("Index: %i\n", chunkManager.index);
+			//printf("Generating Chunk %i %i %i\n", chunkIndex, x, y);
 			generateChunk(&chunkManager, x, y);
 			if (chunkManager.chunks[chunkManager.index-1] == NULL) {
 				printf("Error generating chunk %i %i\n", x, y);
@@ -85,21 +86,20 @@ static int init() {
 	}
 	printf("\tPreparing Meshes\n");
 	int size = chunkManager.index;
-	for (int i=0; i < size; i++) {
+	for (int i=0; i < 10; i++) {
 		//printf("Getting chunk\n");
 		Chunk* chunk = chunkManager.chunks[i];
-		printf("Creating Buffers\n");
+		printf("1\n");
 		createChunkBuffers(chunk);
-		printf("Checking visible\n");
+		printf("2\n");
 		checkChunkVisible(&chunkManager, chunk);
-		printf("Preparing Mesh %i %i\n", chunk->x, chunk->z);
+		printf("3\n");
 		prepareChunkMesh(chunk);
-		//TEST(&chunkManager, i);
 	}
 	printf("\tPreparing camera\n");
 	camera = cameraInit();
 	camera.cameraPos[2] = 0.0f;
-	camera.cameraPos[1] = 60.0f;
+	camera.cameraPos[1] = 120.0f;
 	camera.cameraPos[0] = 0.0f;
 	camera.useFront = true;
 	view(camera);
@@ -112,9 +112,9 @@ static int init() {
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	//glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	glFrontFace(GL_CW);
+	glDisable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
+	//glFrontFace(GL_CCW);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	return 1;
 }
@@ -145,6 +145,10 @@ static void loop() {
 	glUseProgram(shaderProgram);
 	prepareCubeRender();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	Chunk* testChunk = chunkManager.chunks[0];
+	if (testChunk == NULL) {
+		printf("5\n");
+	}
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
@@ -168,18 +172,24 @@ static void loop() {
 		float playerz = camera.cameraPos[2];
 		int currentChunkx = playerx / (float)CHUNKX / 2.0f;
 		int currentChunkz = playerz / (float)CHUNKZ / 2.0f;
-		//printf("%i %i\n", currentChunkx, currentChunkz);
+
+		//renderChunkMesh(getChunk(&chunkManager, 1, 1), shaderProgram);
+		//renderChunkMesh(getChunk(&chunkManager, -1, -1), shaderProgram);
+		//renderChunkMesh(activeChunk1, shaderProgram);
+		//renderChunkMesh(activeChunk3, shaderProgram);
+		//renderChunkMesh(activeChunk4, shaderProgram);
+		//renderChunkMesh(activeChunk5, shaderProgram);
+
 		//printf("%i, %i\n", currentChunkx, currentChunkz);
-		/*for (int w=0; w<100; w++) {
+		/*for (int w=0; w < 10; w++) {
 			renderChunkMesh(chunkManager.chunks[w], shaderProgram);
 		}*/
+		//printf("Done\n");
 
-/*
-		int i = 0;
+		/*int i = 0;
 		for(int x = currentChunkx-renderDistance; x < currentChunkx+renderDistance; x++) {
 			for(int z = currentChunkz-renderDistance; z < currentChunkz+renderDistance; z++) {
-				printf("%i %i\n", x, z);
-				printf("Getting chunk\n");
+				printf("Getting chunk %i %i\n", x, z);
 				Chunk* temp = getChunk(&chunkManager, x, z);
 				if (temp != NULL) {
 					if(temp->needsBuffers) {
@@ -208,14 +218,10 @@ static void loop() {
 			}
 		}
 
-		for(int i=0; i<500; i++) {
+		for (int i = 0; i < 500; i++) {
 			activeChunks[i] = NULL;
 		}*/
 
-		
-		for(int i=0; i<100; i++) {
-			renderChunkMesh(chunkManager.chunks[i], shaderProgram);
-		}
 
 		processInput();
 		glfwSwapBuffers(window);
@@ -224,9 +230,12 @@ static void loop() {
 		endTime = (float)glfwGetTime();
 	}
 }
-	
-// get rid of entities and everything
+
 static void cleanup() {
+	printf("Cleanup\n");
+	freeChunkManager(chunkManager);
+	cleanupTextures();
+	printf("Cleanup complete\n");
 }
 
 static void perspective() {
@@ -242,7 +251,6 @@ static void view(struct CameraData camera) {
 static void processInput() {
 	if(isKeyPressed(GLFW_KEY_ESCAPE)) {
 		sceneShouldClose = true;
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	}
 	if(isKeyPressed(GLFW_KEY_E)) {			
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

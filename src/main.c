@@ -20,15 +20,16 @@ int main() {
 	double const TARGET_FPS = 60.0;
 
 	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
-		glClear(GL_COLOR_BUFFER_BIT);
-		if(isKeyPressed(GLFW_KEY_ESCAPE)) {
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
-		}
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		if(nextScene == testScene) {
 			runTestScene(window);
 		}
 		nextScene = menuScene;
+		if (isKeyPressed(GLFW_KEY_P)) {
+			nextScene = testScene;
+		}
+		glfwPollEvents();
+		glfwSwapBuffers(window);
 	}
 
 	glfwTerminate();

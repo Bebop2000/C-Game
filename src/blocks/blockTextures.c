@@ -2,14 +2,15 @@
 #include "texture.h"
 #include "stdio.h"
 
-Texture defaultTexture;
 Texture craftingTexture;
-Texture roseTexture;
 Texture grassTexture;
-Texture floorTexture;
-Texture greenTexture;
 Texture atlasTexture;
-Texture batTexture;
+
+void cleanupTextures() {
+	glDeleteTextures(1, &craftingTexture.ID);
+	glDeleteTextures(1, &grassTexture.ID);
+	glDeleteTextures(1, &atlasTexture.ID);
+}
 
 void blockTexturesInit() {
 #ifdef linux
@@ -20,36 +21,22 @@ void blockTexturesInit() {
 	const char* floor = "../res/textures/floor.png";
 	const char* green = "../res/textures/green.png";
 	const char* atlas = "../res/textures/atlas.png";
-	const char* bat = "../res/textures/bat.png";
 #else
-	const char* defTexture = "C:/C-Game/res/textures/default.png";
 	const char* table = "C:/C-Game/res/textures/crafting_table.png";
-	const char* rose = "C:/C-Game/res/textures/rose.png";
 	const char* grass = "C:/C-Game/res/textures/grass.png";
-	const char* floor = "C:/C-Game/res/textures/floor.png";
-	const char* green = "C:/C-Game/res/textures/green.png";
+	const char* atlas = "C:/C-Game/res/textures/atlas.png";
 #endif
 	loadTextureFromFile(&craftingTexture, table, 4);
-	loadTextureFromFile(&roseTexture, rose, 4);
 	loadTextureFromFile(&grassTexture, grass, 4);
-	loadTextureFromFile(&floorTexture, floor, 4);
-	loadTextureFromFile(&defaultTexture, defTexture, 4);
-	loadTextureFromFile(&greenTexture, green, 4);
 	loadTextureFromFile(&atlasTexture, atlas, 3);
-	loadTextureFromFile(&batTexture, bat, 4);
 }
 
 unsigned int getBlockTexture(BlockID textureID) {
-	if(textureID == DEFAULT_BLOCK)
-		return defaultTexture.ID;
 	if(textureID == CRAFTING_TABLE_BLOCK)
 		return craftingTexture.ID;
-	if(textureID == FLOOR)
-		return floorTexture.ID;
-	if(textureID == GREEN)
-		return greenTexture.ID;
-	if(textureID == BAT)
-		return batTexture.ID;
+	if(textureID == GRASS)
+		return grassTexture.ID;
+	return 0;
 }
 
 unsigned int getTextureAtlas() {

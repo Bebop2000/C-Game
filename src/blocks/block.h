@@ -10,7 +10,8 @@ typedef enum BlockID{
 	CRAFTING_TABLE_BLOCK,
 	FLOOR,
 	AIR,
-	BAT
+	BAT,
+	GRASS
 }BlockID;
 
 #endif

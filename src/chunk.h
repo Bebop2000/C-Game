@@ -43,6 +43,7 @@ typedef struct{
 }ChunkManager;
 
 void chunkGenInit();
+void freeChunkManager(ChunkManager cm);
 void generateChunk(ChunkManager* cm, int chunkx, int chunky);
 Chunk* getChunk(ChunkManager* cm, int x, int z);
 void checkChunkVisible(ChunkManager* cm, Chunk* chunk);

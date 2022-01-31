@@ -15,14 +15,10 @@ vec3 zAxis = { 0.0f, 0.0f, 1.0f };
 
 void prepareCubeRender(){
 	glBindVertexArray(cubeMesh.VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeMesh.VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeMesh.EBO);
 }
 
 void prepareQuadRender(){
 	glBindVertexArray(quadMesh.VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
 }
 void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
 	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
