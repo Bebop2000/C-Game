@@ -7,7 +7,8 @@ uniform sampler2D image;
 
 void main()
 {
-	colour = texture(image, texCoords);
+	float ambientStrength = 0.8;
+	colour = texture(image, texCoords) * ambientStrength;
 	//if (colour.a < 0.1)
 	//	discard;
 }

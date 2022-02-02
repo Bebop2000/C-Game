@@ -10,6 +10,9 @@
 #include "../camera.h"
 #include "../chunk.h"
 
+#define dist(x1, y1, x2, y2) (sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)))
+#define abs(x) (sqrt(x*x))
+
 
 static int init();
 static void loop();
@@ -76,7 +79,6 @@ static int init() {
 	printf("\tGenerating starting chunks\n");
 	for(int x=0; x<20; x++){
 		for(int y=0; y<20; y++){
-			printf("Index: %i\n", chunkManager.index);
 			//printf("Generating Chunk %i %i %i\n", chunkIndex, x, y);
 			generateChunk(&chunkManager, x, y);
 			if (chunkManager.chunks[chunkManager.index-1] == NULL) {
@@ -86,14 +88,10 @@ static int init() {
 	}
 	printf("\tPreparing Meshes\n");
 	int size = chunkManager.index;
-	for (int i=0; i < 10; i++) {
-		//printf("Getting chunk\n");
+	for (int i=0; i < size; i++) {
 		Chunk* chunk = chunkManager.chunks[i];
-		printf("1\n");
 		createChunkBuffers(chunk);
-		printf("2\n");
 		checkChunkVisible(&chunkManager, chunk);
-		printf("3\n");
 		prepareChunkMesh(chunk);
 	}
 	printf("\tPreparing camera\n");
@@ -136,7 +134,7 @@ float top = 10.0f;
 float near = 0.0f;
 float far = 200.0f;
 Chunk* activeChunks[500];
-int renderDistance = 10;
+int renderDistance = 5;
 
 int POO;
 static void loop() {
@@ -145,16 +143,12 @@ static void loop() {
 	glUseProgram(shaderProgram);
 	prepareCubeRender();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	Chunk* testChunk = chunkManager.chunks[0];
-	if (testChunk == NULL) {
-		printf("5\n");
-	}
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
+		//printf("FPS: %f\n", 1.0f/dt);
 		//printf("%f, %f, %f\n", camera.cameraPos[0], camera.cameraPos[1], camera.cameraPos[2]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 		updateCameraFront(&camera);
 		view(camera);
 		perspective();
@@ -162,49 +156,29 @@ static void loop() {
 		setShaderMat4("projection", projectionMatrix, shaderProgram);
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
 		//printf("Rending block\n");
-		prepareCubeRender();
-		renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
-		mat4 frustum;
-		glm_frustum(0.0f, 10, 0.0f, 10, near, far, frustum);
+		//prepareCubeRender();
+		//renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
 		vec3 loc = {0.0f, 0.0f, 0.0f};
 
 		float playerx = camera.cameraPos[0];
 		float playerz = camera.cameraPos[2];
-		int currentChunkx = playerx / (float)CHUNKX / 2.0f;
-		int currentChunkz = playerz / (float)CHUNKZ / 2.0f;
+		int currentChunkx = playerx / (float)CHUNKX;
+		int currentChunkz = playerz / (float)CHUNKZ;
 
-		//renderChunkMesh(getChunk(&chunkManager, 1, 1), shaderProgram);
-		//renderChunkMesh(getChunk(&chunkManager, -1, -1), shaderProgram);
-		//renderChunkMesh(activeChunk1, shaderProgram);
-		//renderChunkMesh(activeChunk3, shaderProgram);
-		//renderChunkMesh(activeChunk4, shaderProgram);
-		//renderChunkMesh(activeChunk5, shaderProgram);
-
-		//printf("%i, %i\n", currentChunkx, currentChunkz);
-		/*for (int w=0; w < 10; w++) {
-			renderChunkMesh(chunkManager.chunks[w], shaderProgram);
-		}*/
-		//printf("Done\n");
-
-		/*int i = 0;
+		int i = 0;
 		for(int x = currentChunkx-renderDistance; x < currentChunkx+renderDistance; x++) {
 			for(int z = currentChunkz-renderDistance; z < currentChunkz+renderDistance; z++) {
-				printf("Getting chunk %i %i\n", x, z);
 				Chunk* temp = getChunk(&chunkManager, x, z);
 				if (temp != NULL) {
-					if(temp->needsBuffers) {
-						printf("Creating buffers\n");
+					if(!temp->hasBuffers) {
 						createChunkBuffers(temp);
-						temp->needsBuffers = 0;
+						temp->hasBuffers = 1;
 					}
-					if(temp->needsPreparing) {
-						printf("Checking Visibility\n");
+					if(!temp->hasMesh) {
 						checkChunkVisible(&chunkManager, temp);
-						printf("Preparing Mesh\n");
 						prepareChunkMesh(temp);
-						temp->needsPreparing = 0;
+						temp->hasMesh = 1;
 					}
-					printf("Allocating chunk %i\n", i);
 					activeChunks[i++] = temp;
 				}
 				else {
@@ -212,17 +186,25 @@ static void loop() {
 				}
 			}
 		}
-		for(int i=0; i<100; i++) {
-			if(i != NULL) {
-				renderChunkMesh(activeChunks[i], shaderProgram);
+		for(int i=0; i<500; i++) {
+			if(activeChunks[i] != NULL) {
+				renderChunkMesh(activeChunks[i], shaderProgram, shaderMatrix);
 			}
 		}
-
 		for (int i = 0; i < 500; i++) {
 			activeChunks[i] = NULL;
-		}*/
-
-
+		}
+		for(int i = 0; i <chunkManager.index; i++) {
+			Chunk* chunk = chunkManager.chunks[i];
+			if(dist(currentChunkx, currentChunkz, chunk->x, chunk->z) > (float)(renderDistance + 20)) {
+				//printf("Freeing %i %i\n", chunk->x, chunk->z);
+				if (chunk->hasMesh || chunk->hasBuffers) {
+					freeChunkMesh(chunk);
+					chunk->hasBuffers = 0;
+					chunk->hasMesh = 0;
+				}
+			}
+		}
 		processInput();
 		glfwSwapBuffers(window);
 		endFrameScroll();
