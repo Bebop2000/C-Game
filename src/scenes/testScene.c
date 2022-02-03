@@ -143,10 +143,10 @@ static void loop() {
 	glUseProgram(shaderProgram);
 	prepareCubeRender();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	float elapsedTime = 0.0f;
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
-		//printf("FPS: %f\n", 1.0f/dt);
 		//printf("%f, %f, %f\n", camera.cameraPos[0], camera.cameraPos[1], camera.cameraPos[2]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		updateCameraFront(&camera);
@@ -164,6 +164,10 @@ static void loop() {
 		float playerz = camera.cameraPos[2];
 		int currentChunkx = playerx / (float)CHUNKX;
 		int currentChunkz = playerz / (float)CHUNKZ;
+		if (elapsedTime > 0.5f) {
+			printf("%i %i\n", currentChunkx, currentChunkz);
+			elapsedTime = 0.0f;
+		}
 
 		int i = 0;
 		for(int x = currentChunkx-renderDistance; x < currentChunkx+renderDistance; x++) {
@@ -191,6 +195,30 @@ static void loop() {
 				renderChunkMesh(activeChunks[i], shaderProgram, shaderMatrix);
 			}
 		}
+		if (isKeyPressed(GLFW_KEY_I)) {
+			printf("Regenerating chunks\n");
+			for (int c = 0; c < 500; c++) {
+				Chunk* chunk = activeChunks[c];
+				if (chunk != NULL) {
+					//regenerateChunkTerrain(chunk);
+					//createChunkBuffers(chunk);
+					freeChunkMesh(chunk);
+					createChunkBuffers(chunk);
+					checkChunkVisible(&chunkManager, chunk);
+					prepareChunkMesh(chunk);
+				}
+			}
+			printf("Done\n");
+		}
+		if (isKeyPressed(GLFW_KEY_O)) {
+			printf("Deleting Meshes\n");
+			for (int c = 0; c < chunkManager.index - 1; c++) {
+				Chunk* chunk = chunkManager.chunks[c];
+				if (chunk != NULL && !chunk->hasBuffers && !chunk->hasMesh) {
+					freeChunkMesh(chunkManager.chunks[c]);
+				}
+			}
+		}
 		for (int i = 0; i < 500; i++) {
 			activeChunks[i] = NULL;
 		}
@@ -198,7 +226,7 @@ static void loop() {
 			Chunk* chunk = chunkManager.chunks[i];
 			if(dist(currentChunkx, currentChunkz, chunk->x, chunk->z) > (float)(renderDistance + 20)) {
 				//printf("Freeing %i %i\n", chunk->x, chunk->z);
-				if (chunk->hasMesh || chunk->hasBuffers) {
+				if ((chunk->hasMesh || chunk->hasBuffers) && chunk != NULL) {
 					freeChunkMesh(chunk);
 					chunk->hasBuffers = 0;
 					chunk->hasMesh = 0;
@@ -210,6 +238,7 @@ static void loop() {
 		endFrameScroll();
 		glfwPollEvents();
 		endTime = (float)glfwGetTime();
+		elapsedTime += dt;
 	}
 }
 

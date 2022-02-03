@@ -45,6 +45,8 @@ const float bottomFace[] = {
         -0.5f, -0.5f,  0.5f, 0.5f, 0.5f,
 };
 
+void terrainGen(Chunk* chunk);
+
 //to free chunk, call freeChunkMesh, then freeChunkGrid in that order
 
 void freeChunkMesh(Chunk* chunk) {
@@ -69,10 +71,26 @@ void freeChunkManager(ChunkManager cm) {
     printf("Freeing ChunkManager\n");
     for (int c = 0; c < cm.index; c++) {
         Chunk* chunk = cm.chunks[c];
-        freeChunkMesh(chunk);
-        freeChunkGrid(chunk);
+        if (chunk != NULL) {
+            freeChunkMesh(chunk);
+            freeChunkGrid(chunk);
+        }
     }
     free(cm.chunks);
+}
+
+void regenerateChunkTerrain(Chunk* chunk) {
+    freeChunkMesh(chunk);
+    chunk->quads = 0;
+    chunk->hasBuffers = 0;
+    chunk->hasMesh = 0;
+    chunk->mesh.indiceCount = 0;
+    chunk->mesh.verticeCount = 0;
+    chunk->mesh.vertices = NULL;
+    chunk->mesh.indices = NULL;
+    int chunkx = chunk->x;
+    int chunkz = chunk->z;
+    terrainGen(chunk);
 }
 
 void checkChunkVisible(ChunkManager* cm, Chunk* chunk);
@@ -91,7 +109,6 @@ void setBlockDefault(Block* block) {
     block->blockID = AIR;
 }
 void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
-    //printf("generateChunk()\n");
     //printf("Allocating memory\n");
     if (cm == NULL) {
         printf("ERROR: Null chunk manager\n");
@@ -127,64 +144,58 @@ void generateChunk(ChunkManager* cm, int chunkx, int chunkz) {
         chunk->mesh.verticeCount = 0;
         chunk->mesh.vertices = NULL;
         chunk->mesh.indices = NULL;
-        
-        chunk->grid[0][0][0].blockID = GREEN;
-
-        //printf("Setting defaults\n");
-        for(int x=0; x<CHUNKX; x++) {
-            for(int y=0; y<CHUNKY; y++) {
-                for(int z=0; z<CHUNKZ; z++) {
-                    chunk->grid[x][y][z].blockID = 0;
-                    setBlockDefault(&(chunk->grid[x][y][z]));
-                    chunk->grid[x][y][z].topVisible = 0;
-                    chunk->grid[x][y][z].bottomVisible = 0;
-                    chunk->grid[x][y][z].leftVisible = 0;
-                    chunk->grid[x][y][z].rightVisible = 0;
-                    chunk->grid[x][y][z].frontVisible = 0;
-                    chunk->grid[x][y][z].backVisible = 0;
-                    if(y == 1) {
-                        chunk->grid[x][y][z].blockID = GREEN;
-                    }
-                }
-            }
-        }
-        //printf("Generating Terrain\n");
-        /*if (chunkx < 0) {
-            chunkx *= -1;
-        }
-        if (chunkz < 0) {
-            chunkz *= -1;
-        }*/
-        for(int x=0; x < CHUNKX; x++) {
-            for(int z=0; z< CHUNKZ; z++) {
-                int height = (int)(perlin2d(x+chunkx*CHUNKX, z+chunkz*CHUNKZ, 0.005, 10) * 100);
-                if (height > CHUNKY - 2) {
-                    height = CHUNKY - 2;
-                }
-                if (height < 0) {
-                    height = 0;
-                }
-                chunk->grid[x][height][z].blockID = GREEN;
-                for(int y=height; y > 0; y--) {
-                    if (height - y < 10) {
-                        chunk->grid[x][y][z].blockID = GREEN;
-                    }
-                    else{
-                        float value = pnoise3((float)(x+chunkx*CHUNKX)/25.0f, (float)y / 10.0f, (float)(z+chunkz*CHUNKZ) / 25.0f, 200, 200, 200);
-                        if (value < 0.2) {
-                            chunk->grid[x][y][z].blockID = GREEN;
-                        }
-                    }
-                }
-            }
-        }
+        terrainGen(chunk);
     }
     cm->chunks[cm->index++] = chunk;
-    if(chunk->x < 0 || chunk->z < 0) {
-        printf("%i\n", chunk->quads);
+}
+void terrainGen(Chunk* chunk) {
+    int chunkx = chunk->x;
+    int chunkz = chunk->z;
+    for (int x = 0; x < CHUNKX; x++) {
+        for (int y = 0; y < CHUNKY; y++) {
+            for (int z = 0; z < CHUNKZ; z++) {
+                if (chunkx < 0 || chunkz < 0) {
+                    chunk->grid[x][y][z].blockID = AIR;
+                }
+                else {
+                    chunk->grid[x][y][z].blockID = AIR;
+                }
+                chunk->grid[x][y][z].topVisible = 0;
+                chunk->grid[x][y][z].bottomVisible = 0;
+                chunk->grid[x][y][z].leftVisible = 0;
+                chunk->grid[x][y][z].rightVisible = 0;
+                chunk->grid[x][y][z].frontVisible = 0;
+                chunk->grid[x][y][z].backVisible = 0;
+                if (y == 1) {
+                    chunk->grid[x][y][z].blockID = GREEN;
+                }
+            }
+        }
+    }
+    for (int x = 0; x < CHUNKX; x++) {
+        for (int z = 0; z < CHUNKZ; z++) {
+            int height = (int)(perlin2d(abs(x + chunkx * CHUNKX), abs(z + chunkz * CHUNKZ), 0.005, 10) * 100);
+            if (height > CHUNKY - 2) {
+                height = CHUNKY - 2;
+            }
+            if (height < 0) {
+                height = 0;
+            }
+            chunk->grid[x][height][z].blockID = GREEN;
+            for (int y = height; y > 0; y--) {
+                if (height - y < 10) {
+                    chunk->grid[x][y][z].blockID = GREEN;
+                }
+                else {
+                    float value = pnoise3((float)(abs(x + chunkx * CHUNKX)) / 25.0f, (float)y / 10.0f, (float)(abs(z + chunkz * CHUNKZ)) / 25.0f, 200, 200, 200);
+                    if (value < 0.2) {
+                        chunk->grid[x][y][z].blockID = GREEN;
+                    }
+                }
+            }
+        }
     }
 }
-
 Chunk* getChunk(ChunkManager* cm, int x, int z) {
     //printf("getChunk() Getting chunk %i %i\n", x, z);
     for(int i = 0; i < cm->index; i++) {

@@ -2,8 +2,6 @@
 #include "noise.h"
 #include "stdio.h"
 
-#define abs(x) (sqrt(x*x))
-
 static int SEED = 6;
 
 static int hash[] = {208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,245,255,247,247,40,
@@ -180,17 +178,14 @@ float noise3( float x, float y, float z )
 
 float pnoise3(float x, float y, float z, int px, int py, int pz)
 {
-    x = abs(x);
-    y = abs(y);
-    z = abs(z);
     int ix0, iy0, ix1, iy1, iz0, iz1;
     float fx0, fy0, fz0, fx1, fy1, fz1;
     float s, t, r;
     float nxy0, nxy1, nx0, nx1, n0, n1;
 
-    ix0 = FASTFLOOR(abs(x)); // Integer part of x
-    iy0 = FASTFLOOR(abs(y)); // Integer part of y
-    iz0 = FASTFLOOR(abs(z)); // Integer part of z
+    ix0 = FASTFLOOR(x); // Integer part of x
+    iy0 = FASTFLOOR(y); // Integer part of y
+    iz0 = FASTFLOOR(z); // Integer part of z
     fx0 = x - ix0;        // Fractional part of x
     fy0 = y - iy0;        // Fractional part of y
     fz0 = z - iz0;        // Fractional part of z

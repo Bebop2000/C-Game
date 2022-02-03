@@ -44,6 +44,7 @@ void freeChunkMesh(Chunk* chunk);
 void freeChunkGrid(Chunk* chunk);
 void freeChunkManager(ChunkManager cm);
 void generateChunk(ChunkManager* cm, int chunkx, int chunky);
+void regenerateChunkTerrain(Chunk* chunk);
 Chunk* getChunk(ChunkManager* cm, int x, int z);
 void checkChunkVisible(ChunkManager* cm, Chunk* chunk);
 void createChunkBuffers(Chunk* chunk);
