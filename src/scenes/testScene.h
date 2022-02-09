@@ -3,5 +3,4 @@
 
 void runTestScene(GLFWwindow* glfwWindow);
 
-extern int POO;
 #endif

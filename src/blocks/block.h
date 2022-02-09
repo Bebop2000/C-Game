@@ -11,7 +11,8 @@ typedef enum BlockID{
 	FLOOR,
 	AIR,
 	BAT,
-	GRASS
+	GRASS,
+	TEXTURE_ATLAS
 }BlockID;
 
 #endif

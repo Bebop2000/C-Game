@@ -4,6 +4,7 @@
 int windowWidth;
 int windowHeight;
 
+// Sets glfw settings and creates window
 GLFWwindow* makeWindow(int width, int height, const char* title) {
 	if(!glfwInit()) {
 		printf("Failed to create GLFW window\n");
@@ -17,7 +18,7 @@ GLFWwindow* makeWindow(int width, int height, const char* title) {
 
 	GLFWwindow* window;
 	window = glfwCreateWindow(width, height, title, 0, 0);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwMakeContextCurrent(window);
 
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -32,5 +33,3 @@ GLFWwindow* makeWindow(int width, int height, const char* title) {
 void setClearColour(float r, float g, float b, float a) {
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }
-
-

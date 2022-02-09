@@ -11,14 +11,12 @@
 #include "../chunk.h"
 
 #define dist(x1, y1, x2, y2) (sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)))
-#define abs(x) (sqrt(x*x))
+#define square(x) (x * x)
 
 
 static int init();
 static void loop();
 static void cleanup();
-static void perspective();
-static void view(struct CameraData camera);
 static void processInput();
 static void endFrameScroll();
 static void framebufferSizeCallback(GLFWwindow *window, int width, int height);
@@ -73,35 +71,30 @@ static int init() {
 	}
 
 	chunkManager.chunks = calloc(500, sizeof(Chunk*));
-	printf("%p\n", chunkManager.chunks);
 	chunkManager.size = 500;
-	chunkManager.index = 0;
-	printf("\tGenerating starting chunks\n");
-	for(int x=0; x<20; x++){
-		for(int y=0; y<20; y++){
-			//printf("Generating Chunk %i %i %i\n", chunkIndex, x, y);
-			generateChunk(&chunkManager, x, y);
-			if (chunkManager.chunks[chunkManager.index-1] == NULL) {
-				printf("Error generating chunk %i %i\n", x, y);
-			}
+	chunkManager.nextIndex = 0;
+
+/*
+	for(int x = 0; x < 10; x++) {
+		for(int z = 0; z < 10; z++) {
+			generateChunk(&chunkManager, x, z);
+			Chunk* chunk = chunkManager.chunks[chunkManager.nextIndex -1];
+			createChunkBuffers(chunk);
+			checkChunkVisible(&chunkManager, chunk);
+			prepareChunkMesh(chunk);
 		}
-	}
-	printf("\tPreparing Meshes\n");
-	int size = chunkManager.index;
-	for (int i=0; i < size; i++) {
-		Chunk* chunk = chunkManager.chunks[i];
-		createChunkBuffers(chunk);
-		checkChunkVisible(&chunkManager, chunk);
-		prepareChunkMesh(chunk);
-	}
+	}*/
+
+
 	printf("\tPreparing camera\n");
 	camera = cameraInit();
-	camera.cameraPos[2] = 0.0f;
-	camera.cameraPos[1] = 120.0f;
-	camera.cameraPos[0] = 0.0f;
-	camera.useFront = true;
-	view(camera);
-	perspective();
+	camera.pos[2] = 0.0f;
+	camera.pos[1] = 120.0f;
+	camera.pos[0] = 0.0f;
+	camera.useDirection = true;
+	camera.target[0] = 0.0f;
+	camera.target[1] = 60.0f;
+	camera.target[2] = 0.0f;
 
 	rendererInit();
 	blockTexturesInit();
@@ -110,9 +103,6 @@ static int init() {
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glDisable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glFrontFace(GL_CCW);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	return 1;
 }
@@ -124,19 +114,9 @@ float mult = 60.0f;
 float shiftMult = 2.0f;
 float shiftMultCache = 0.0f;
 bool sceneShouldClose;
-bool cull = false;
-
-
-float left = 0.0f;
-float right = 10.0f;
-float bottom = 0.0f;
-float top = 10.0f;
-float near = 0.0f;
-float far = 200.0f;
 Chunk* activeChunks[500];
-int renderDistance = 5;
+int renderDistance = 10;
 
-int POO;
 static void loop() {
 	printf("Loop start\n");
 	sceneShouldClose = false;
@@ -144,14 +124,20 @@ static void loop() {
 	prepareCubeRender();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	float elapsedTime = 0.0f;
+	float testTotal = 0;
+	int testChunks = 0;
 	while (!glfwWindowShouldClose(window) && !sceneShouldClose) {
 		dt = endTime - startTime;
 		startTime = (float)glfwGetTime();
-		//printf("%f, %f, %f\n", camera.cameraPos[0], camera.cameraPos[1], camera.cameraPos[2]);
+		//printf("%f, %f, %f\n", camera.pos[0], camera.pos[1], camera.pos[2]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		updateCameraFront(&camera);
-		view(camera);
-		perspective();
+
+		updateCameraDirection(&camera);
+		glm_mat4_identity(viewMatrix);
+		glm_mat4_identity(projectionMatrix);
+		createViewMatrix(camera, viewMatrix);
+		glm_perspective(rad(fov), (float)windowWidth / (float)windowHeight, 0.1f, 500.0f, projectionMatrix);
+
 		glm_mat4_mul(projectionMatrix, viewMatrix, shaderMatrix);
 		setShaderMat4("projection", projectionMatrix, shaderProgram);
 		setShaderMat4("projectionTimesView", shaderMatrix, shaderProgram);
@@ -160,12 +146,11 @@ static void loop() {
 		//renderBlock(CRAFTING_TABLE_BLOCK, craftingTableLocation, 1.0f, shaderProgram);
 		vec3 loc = {0.0f, 0.0f, 0.0f};
 
-		float playerx = camera.cameraPos[0];
-		float playerz = camera.cameraPos[2];
+		float playerx = camera.pos[0];
+		float playerz = camera.pos[2];
 		int currentChunkx = playerx / (float)CHUNKX;
 		int currentChunkz = playerz / (float)CHUNKZ;
 		if (elapsedTime > 0.5f) {
-			printf("%i %i\n", currentChunkx, currentChunkz);
 			elapsedTime = 0.0f;
 		}
 
@@ -182,6 +167,8 @@ static void loop() {
 						checkChunkVisible(&chunkManager, temp);
 						prepareChunkMesh(temp);
 						temp->hasMesh = 1;
+						testTotal += (temp->mesh.verticeCount * 5 * sizeof(float) + temp->mesh.indiceCount * sizeof(int));
+						testChunks += 1;
 					}
 					activeChunks[i++] = temp;
 				}
@@ -190,18 +177,17 @@ static void loop() {
 				}
 			}
 		}
+		printf("%f\n", testTotal / (float)testChunks);
 		for(int i=0; i<500; i++) {
 			if(activeChunks[i] != NULL) {
 				renderChunkMesh(activeChunks[i], shaderProgram, shaderMatrix);
 			}
 		}
 		if (isKeyPressed(GLFW_KEY_I)) {
-			printf("Regenerating chunks\n");
+			printf("Regenerating active chunks\n");
 			for (int c = 0; c < 500; c++) {
 				Chunk* chunk = activeChunks[c];
 				if (chunk != NULL) {
-					//regenerateChunkTerrain(chunk);
-					//createChunkBuffers(chunk);
 					freeChunkMesh(chunk);
 					createChunkBuffers(chunk);
 					checkChunkVisible(&chunkManager, chunk);
@@ -212,7 +198,7 @@ static void loop() {
 		}
 		if (isKeyPressed(GLFW_KEY_O)) {
 			printf("Deleting Meshes\n");
-			for (int c = 0; c < chunkManager.index - 1; c++) {
+			for (int c = 0; c < chunkManager.nextIndex - 1; c++) {
 				Chunk* chunk = chunkManager.chunks[c];
 				if (chunk != NULL && !chunk->hasBuffers && !chunk->hasMesh) {
 					freeChunkMesh(chunkManager.chunks[c]);
@@ -222,7 +208,7 @@ static void loop() {
 		for (int i = 0; i < 500; i++) {
 			activeChunks[i] = NULL;
 		}
-		for(int i = 0; i <chunkManager.index; i++) {
+		for(int i = 0; i <chunkManager.nextIndex; i++) {
 			Chunk* chunk = chunkManager.chunks[i];
 			if(dist(currentChunkx, currentChunkz, chunk->x, chunk->z) > (float)(renderDistance + 20)) {
 				//printf("Freeing %i %i\n", chunk->x, chunk->z);
@@ -233,6 +219,8 @@ static void loop() {
 				}
 			}
 		}
+		
+		
 		processInput();
 		glfwSwapBuffers(window);
 		endFrameScroll();
@@ -249,16 +237,6 @@ static void cleanup() {
 	printf("Cleanup complete\n");
 }
 
-static void perspective() {
-	glm_mat4_identity(projectionMatrix);
-	glm_perspective(rad(fov), (float)windowWidth / (float)windowHeight, 0.1f, 500.0f, projectionMatrix);
-}
-
-static void view(struct CameraData camera) {
-	glm_mat4_identity(viewMatrix);
-	createViewMatrix(camera, &viewMatrix);
-}
-
 static void processInput() {
 	if(isKeyPressed(GLFW_KEY_ESCAPE)) {
 		sceneShouldClose = true;
@@ -271,10 +249,10 @@ static void processInput() {
 	}
 	if(isKeyPressed(GLFW_KEY_T)) {
 		glfwWaitEvents();
-		camera.cameraPos[0] += 1.0f;
+		camera.pos[0] += 1.0f;
 	}
 	if(isKeyPressed(GLFW_KEY_Y)) {
-		camera.cameraPos[2] += 1.0f;
+		camera.pos[2] += 1.0f;
 		glfwWaitEvents();
 	}
 	if(isKeyPressed(GLFW_KEY_W)) {
@@ -290,18 +268,17 @@ static void processInput() {
 		strafeCameraRight(&camera, dt * mult);
 	}
 	if(isKeyPressed(GLFW_KEY_UP)) {
-		POO += 1;
-		//printf("%i\n", POO);
 	}
 	if(isKeyPressed(GLFW_KEY_DOWN)) {
-		far -= 1;
 	}
 	if(isKeyPressed(GLFW_KEY_SPACE)) {
-		camera.cameraPos[1] += 50.0f * dt;
+		moveCameraDown(&camera, dt * -mult);
+	}
+	if(isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+		moveCameraDown(&camera, dt * mult);
 	}
 	if(scrollYOffset) {
 		fov += (float)scrollYOffset;
-		perspective();
 	}
 }
 
@@ -313,7 +290,6 @@ static void endFrameScroll() {
 static void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
 	windowWidth = width;
 	windowHeight = height;
-	perspective();
 	glViewport(0, 0, width, height);
 }
 

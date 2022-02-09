@@ -2,6 +2,7 @@
 #include "input.h"
 #include "window.h"
 #include "scenes/testScene.h"
+#include "noise.h"
 
 Scene nextScene;
 void framebufferSizeCallbackM(GLFWwindow* window, int width, int height);
@@ -21,6 +22,9 @@ int main() {
 
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if(isKeyPressed(GLFW_KEY_ESCAPE)) {
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
+		}
 		if(nextScene == testScene) {
 			runTestScene(window);
 		}

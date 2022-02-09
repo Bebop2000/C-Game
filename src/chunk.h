@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
     Block grid[CHUNKX][CHUNKY][CHUNKZ];
     int x, z;
-    int index;
+    int index;      //index of chunk in the chunkManager
     struct Mesh{
         float* vertices;
         int verticeCount;
@@ -33,10 +33,9 @@ typedef struct {
 }Chunk;
 
 typedef struct{
-    //array of chunk pointers
-    Chunk** chunks;
-    int index;
-    int size;
+    Chunk** chunks; //array of chunk pointers -> Chunk* chunk[...]
+    int nextIndex;      //index of the next chunk to be added
+    int size;       //number of chunks allocated in memory
 }ChunkManager;
 
 void chunkGenInit();

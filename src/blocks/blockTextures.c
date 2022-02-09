@@ -36,6 +36,8 @@ unsigned int getBlockTexture(BlockID textureID) {
 		return craftingTexture.ID;
 	if(textureID == GRASS)
 		return grassTexture.ID;
+	if(textureID == TEXTURE_ATLAS)
+		return atlasTexture.ID;
 	return 0;
 }
 

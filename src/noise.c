@@ -1,5 +1,6 @@
 // BORROWED CODE
 #include "noise.h"
+//#include "../vendor/cglm/vec2.h"
 #include "stdio.h"
 
 static int SEED = 6;
@@ -16,6 +17,27 @@ static int hash[] = {208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,24
                      101,120,99,3,186,86,99,41,237,203,111,79,220,135,158,42,30,154,120,67,87,167,
                      135,176,183,191,253,115,184,21,233,58,129,233,142,39,128,211,118,137,139,255,
                      114,20,218,113,154,27,127,246,250,1,8,198,250,209,92,222,173,21,88,102,219};
+
+/*
+float perlin2d(float x, float y, float freq) {
+    int ix = (int)x % 255;    // remove decimal
+    int iy = (int)y % 255;    // and wrap around 255
+    float fx = x - (float)ix;   // remove whole number part
+    float fy = y - (float)iy;
+    // coordinates for vectors
+    vec2 bl = {fx,           fy};
+    vec2 br = {fx - 1.0f,    fy};
+    vec2 tl = {fx,           fy - 1.0f};
+    vec2 tr = {fx - 1.0f,    fy - 1.0f};
+    
+
+
+
+
+    return 0.1f;
+}*/
+
+
 
 int noise2(int x, int y)
 {
