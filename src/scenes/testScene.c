@@ -177,7 +177,6 @@ static void loop() {
 				}
 			}
 		}
-		printf("%f\n", testTotal / (float)testChunks);
 		for(int i=0; i<500; i++) {
 			if(activeChunks[i] != NULL) {
 				renderChunkMesh(activeChunks[i], shaderProgram, shaderMatrix);

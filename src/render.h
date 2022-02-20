@@ -1,7 +1,7 @@
 #ifndef RENDER_H
 #define RENDER_H
 #include "core.h"
-#include "blocks/block.h"
+#include "blocks/blockTextures.h"
 
 typedef struct{
 	unsigned int VAO, VBO, EBO;

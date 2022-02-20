@@ -33,9 +33,9 @@ typedef struct {
 }Chunk;
 
 typedef struct{
-    Chunk** chunks; //array of chunk pointers -> Chunk* chunk[...]
+    Chunk** chunks;     //array of chunk pointers -> Chunk* chunk[...]
     int nextIndex;      //index of the next chunk to be added
-    int size;       //number of chunks allocated in memory
+    int size;           //number of chunks allocated in memory
 }ChunkManager;
 
 void chunkGenInit();

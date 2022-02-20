@@ -1,6 +1,5 @@
 #include "render.h"
 #include "core.h"
-#include "blocks/block.h"
 #include "blocks/blockTextures.h"
 #include "shaderProgram.h"
 
@@ -20,26 +19,26 @@ void prepareCubeRender(){
 void prepareQuadRender(){
 	glBindVertexArray(quadMesh.VAO);
 }
-void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
-	glm_mat4_identity(transform);
-	glm_translate(transform, location);
-	setShaderMat4("model", transform, shaderProgram);
-	glDrawElements(GL_TRIANGLES, cubeMesh.vertices, GL_UNSIGNED_INT, 0);
-}
-
-void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
-	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
-	glBindVertexArray(quadMesh.VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
-	glm_mat4_identity(transform);
-	glm_translate(transform, location);
-	vec3 uScale = {scale, scale, scale};
-	glm_scale(transform, uScale);
-	setShaderMat4("model", transform, shaderProgram);
-	glDrawElements(GL_TRIANGLES, quadMesh.vertices, GL_UNSIGNED_INT, 0);
-}
+//void renderBlock(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
+//	glBindTexture(GL_TEXTURE_2D, getTexture(block));
+//	glm_mat4_identity(transform);
+//	glm_translate(transform, location);
+//	setShaderMat4("model", transform, shaderProgram);
+//	glDrawElements(GL_TRIANGLES, cubeMesh.vertices, GL_UNSIGNED_INT, 0);
+//}
+//
+//void renderQuad(BlockID block, vec3 location, float scale, unsigned int shaderProgram) {
+//	glBindTexture(GL_TEXTURE_2D, getBlockTexture(block));
+//	glBindVertexArray(quadMesh.VAO);
+//	glBindBuffer(GL_ARRAY_BUFFER, quadMesh.VBO);
+//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMesh.EBO);
+//	glm_mat4_identity(transform);
+//	glm_translate(transform, location);
+//	vec3 uScale = {scale, scale, scale};
+//	glm_scale(transform, uScale);
+//	setShaderMat4("model", transform, shaderProgram);
+//	glDrawElements(GL_TRIANGLES, quadMesh.vertices, GL_UNSIGNED_INT, 0);
+//}
 
 void bindQuadMesh() {
 	glBindVertexArray(quadMesh.VAO);
