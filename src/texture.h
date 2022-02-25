@@ -15,6 +15,6 @@ typedef struct{
 	unsigned int Filter_Max;
 } Texture;
 
-void loadTextureFromFile(Texture* texture, const char* file, int ch);
+void loadTextureFromFile(Texture* texture, const char* file);
 
 #endif

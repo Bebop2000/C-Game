@@ -1,11 +1,15 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 #include "core.h"
+#include "../vendor/cglm/mat4.h"
+#include "../vendor/cglm/vec3.h"
+#include "../vendor/cglm/vec2.h"
+#include "../vendor/cglm/affine.h"
+#include "../vendor/cglm/cam.h"
 
 typedef struct CameraData{
 	vec3 pos;
 	vec3 direction;
-	vec3 front;
 	vec3 target;
 	float pitch;
 	float yaw;

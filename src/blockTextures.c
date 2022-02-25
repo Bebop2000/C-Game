@@ -1,6 +1,5 @@
 #include "blockTextures.h"
 #include "texture.h"
-#include "block.h"
 #include "stdio.h"
 
 Texture craftingTexture;
@@ -15,21 +14,14 @@ void cleanupTextures() {
 
 void blockTexturesInit() {
 #ifdef linux
-	const char* defTexture = "../res/textures/default.png";
-	const char* table = "../res/textures/crafting_table.png";
-	const char* rose =  "../res/textures/rose.png";
 	const char* grass = "../res/textures/grass.png";
-	const char* floor = "../res/textures/floor.png";
-	const char* green = "../res/textures/green.png";
 	const char* atlas = "../res/textures/atlas.png";
 #else
-	const char* table = "C:/C-Game/res/textures/crafting_table.png";
 	const char* grass = "C:/C-Game/res/textures/grass.png";
 	const char* atlas = "C:/C-Game/res/textures/atlas.png";
 #endif
-	loadTextureFromFile(&craftingTexture, table, 4);
-	loadTextureFromFile(&grassTexture, grass, 4);
-	loadTextureFromFile(&atlasTexture, atlas, 4);
+	loadTextureFromFile(&grassTexture, grass);
+	loadTextureFromFile(&atlasTexture, atlas);
 }
 
 unsigned int getTexture(TextureID tex) {

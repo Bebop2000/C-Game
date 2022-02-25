@@ -1,7 +1,12 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 #include "core.h"
-#include "blocks/block.h"
+#include "../vendor/cglm/mat4.h"
+#include "../vendor/cglm/vec3.h"
+#include "../vendor/cglm/vec2.h"
+#include "../vendor/cglm/affine.h"
+#include "../vendor/cglm/cam.h"
+
 #define CHUNKX 16
 #define CHUNKY 128
 #define CHUNKZ 16
@@ -38,11 +43,11 @@ typedef struct{
     int size;           //number of chunks allocated in memory
 }ChunkManager;
 
-void chunkGenInit();
 void freeChunkMesh(Chunk* chunk);
 void freeChunkGrid(Chunk* chunk);
 void freeChunkManager(ChunkManager cm);
 void generateChunk(ChunkManager* cm, int chunkx, int chunky);
+void terrainGen(Chunk* chunk);
 void regenerateChunkTerrain(Chunk* chunk);
 Chunk* getChunk(ChunkManager* cm, int x, int z);
 void checkChunkVisible(ChunkManager* cm, Chunk* chunk);

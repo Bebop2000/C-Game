@@ -2,6 +2,10 @@
 #define SHADER_PROGRAM_H
 
 #include "core.h"
+#include "../vendor/cglm/mat4.h"
+#include "../vendor/cglm/vec3.h"
+#include "../vendor/cglm/vec2.h"
+#include <stdio.h>
 
 unsigned int compileShaders(const char* vertexPath, const char* fragPath);
 void setShaderInt(const char* name, int value, GLuint shaderProgram);

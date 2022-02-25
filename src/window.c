@@ -1,9 +1,6 @@
 #include "core.h"
 #include "window.h"
 
-int windowWidth;
-int windowHeight;
-
 // Sets glfw settings and creates window
 GLFWwindow* makeWindow(int width, int height, const char* title) {
 	if(!glfwInit()) {
@@ -14,7 +11,7 @@ GLFWwindow* makeWindow(int width, int height, const char* title) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_CURSOR_DISABLED, GLFW_TRUE);
+	//glfwWindowHint(GLFW_CURSOR_DISABLED, GLFW_TRUE);
 
 	GLFWwindow* window;
 	window = glfwCreateWindow(width, height, title, 0, 0);
@@ -28,8 +25,4 @@ GLFWwindow* makeWindow(int width, int height, const char* title) {
 	glfwShowWindow(window);
 
 	return window;
-}
-
-void setClearColour(float r, float g, float b, float a) {
-	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 }

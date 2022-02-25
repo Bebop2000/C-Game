@@ -4,9 +4,7 @@
 #include "../window.h"
 #include "../shaderProgram.h"
 #include "../texture.h"
-#include "../blocks/block.h"
-#include "../blocks/blockTextures.h"
-#include "../render.h"
+#include "../blockTextures.h"
 #include "../camera.h"
 #include "../chunk.h"
 
@@ -35,7 +33,15 @@ float fov = 45.0f;
 int windowWidth;
 int windowHeight;
 
-vec3 craftingTableLocation = {0.0f, 0.0f, 0.0f};
+double mousePosX;
+double mousePosY;
+double scrollXOffset;
+double scrollYOffset;
+double lastX = 0.0;
+double lastY = 0.0;
+double xoffset;
+double yoffset;
+bool mouseButtonsPressed[10];
 
 GLFWwindow* window;
 
@@ -57,7 +63,7 @@ static int init() {
 	glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 	glfwSetCursorPosCallback(window, mouseCallback);
 	framebufferSizeCallback(window, 960, 540);
-	setClearColour(48, 117, 186, 255);
+	glClearColor(48.0f/255.0f, 117.0f/255.0f, 186.0f/255.0f, 255.0f/255.0f);
 #ifdef linux
 	shaderProgram = compileShaders("../res/shaders/defaultVertexShader.glsl",
 									"../res/shaders/defaultFragShader.glsl");
@@ -74,18 +80,6 @@ static int init() {
 	chunkManager.size = 500;
 	chunkManager.nextIndex = 0;
 
-/*
-	for(int x = 0; x < 10; x++) {
-		for(int z = 0; z < 10; z++) {
-			generateChunk(&chunkManager, x, z);
-			Chunk* chunk = chunkManager.chunks[chunkManager.nextIndex -1];
-			createChunkBuffers(chunk);
-			checkChunkVisible(&chunkManager, chunk);
-			prepareChunkMesh(chunk);
-		}
-	}*/
-
-
 	printf("\tPreparing camera\n");
 	camera = cameraInit();
 	camera.pos[2] = 0.0f;
@@ -96,9 +90,7 @@ static int init() {
 	camera.target[1] = 60.0f;
 	camera.target[2] = 0.0f;
 
-	rendererInit();
 	blockTexturesInit();
-	chunkGenInit();
 
 	glUseProgram(shaderProgram);
 	glEnable(GL_DEPTH_TEST);
@@ -121,7 +113,6 @@ static void loop() {
 	printf("Loop start\n");
 	sceneShouldClose = false;
 	glUseProgram(shaderProgram);
-	prepareCubeRender();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	float elapsedTime = 0.0f;
 	float testTotal = 0;

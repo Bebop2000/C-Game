@@ -1,4 +1,3 @@
-#include "core.h"
 #include "shaderProgram.h"
 #ifdef linux
 #include <unistd.h>
@@ -30,7 +29,7 @@ unsigned int compileShaders(const char* vertexPath, const char* fragPath) {
 	const char* vertexSource = readFile(vertexPath);
 	const char* fragSource = readFile(fragPath);
 	int success;
-	char infoLog[512];
+	char log[512];
 
 	//compile vertex shader
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -38,8 +37,8 @@ unsigned int compileShaders(const char* vertexPath, const char* fragPath) {
 	glCompileShader(vertexShaderID);
 	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &success);
 	if(!success) {
-		glGetShaderInfoLog(vertexShaderID, 512, NULL, infoLog);
-		printf("Error compiling vertex shader:\n%s\n", infoLog);
+		glGetShaderInfoLog(vertexShaderID, 512, NULL, log);
+		printf("Error compiling vertex shader:\n%s\n", log);
 	}
 	else{
 		printf("Vertex shader compiled successfully\n");
@@ -52,8 +51,8 @@ unsigned int compileShaders(const char* vertexPath, const char* fragPath) {
 	glCompileShader(fragmentShaderID);
 	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &success);
 	if(!success) {
-		glGetShaderInfoLog(fragmentShaderID, 512, NULL, infoLog);
-		printf("Error compiling fragment shader:\n%s\n", infoLog);
+		glGetShaderInfoLog(fragmentShaderID, 512, NULL, log);
+		printf("Error compiling fragment shader:\n%s\n", log);
 	}
 	else{
 		printf("Fragment shader compiled successfully\n");
@@ -66,8 +65,8 @@ unsigned int compileShaders(const char* vertexPath, const char* fragPath) {
 	glLinkProgram(shaderProgramID);
 	glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &success);
 	if(!success) {
-		glGetProgramInfoLog(shaderProgramID, 512, NULL, infoLog);
-		printf("Error linking shaders:\n%s\n", infoLog);
+		glGetProgramInfoLog(shaderProgramID, 512, NULL, log);
+		printf("Error linking shaders:\n%s\n", log);
 	}
 	else{
 		printf("Shaders linked successfully\n");
